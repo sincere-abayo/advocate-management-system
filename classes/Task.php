@@ -384,6 +384,28 @@ public function getRecentTasks($limit = 5) {
     return $stmt;
 }
 
+// Add this method to the Task class
+
+public function getTasksByStatus($status) {
+    // Query
+    $query = "SELECT t.*, c.case_number 
+              FROM " . $this->table_name . " t
+              LEFT JOIN cases c ON t.case_id = c.id
+              WHERE t.assigned_to = ? AND t.status = ?
+              ORDER BY t.due_date ASC";
+    
+    // Prepare statement
+    $stmt = $this->conn->prepare($query);
+    
+    // Bind parameters
+    $stmt->bindParam(1, $this->assigned_to);
+    $stmt->bindParam(2, $status);
+    
+    // Execute query
+    $stmt->execute();
+    
+    return $stmt;
+}
 
 }
 ?>

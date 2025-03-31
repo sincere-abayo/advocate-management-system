@@ -44,29 +44,41 @@ if($_SERVER["REQUEST_METHOD"] == "POST") {
         $user->username = $username;
         $user->password = $password;
         
-        // Attempt to login
-        if($user->login()) {
-            // Store data in session variables
-            $_SESSION["user_id"] = $user->id;
-            $_SESSION["username"] = $user->username;
-            $_SESSION["role"] = $user->role;
-            $_SESSION["first_name"] = $user->first_name;
-            $_SESSION["last_name"] = $user->last_name;
-            $_SESSION["email"] = $user->email;
-            
-            // Get additional user details
-            $user->id = $_SESSION["user_id"];
-            $user->readOne();
-            $_SESSION["profile_image"] = $user->profile_image;
-            
-            // Redirect user to dashboard
-            header("Location: index.php");
-            exit();
-        } else {
-            // Display an error message if credentials are invalid
-            $login_err = "Invalid username or password.";
+       // Attempt to login
+       if($user->login()) {
+        // Store data in session variables
+        $_SESSION["user_id"] = $user->id;
+        $_SESSION["username"] = $user->username;
+        $_SESSION["role"] = $user->role;
+        $_SESSION["first_name"] = $user->first_name;
+        $_SESSION["last_name"] = $user->last_name;
+        $_SESSION["email"] = $user->email;
+        
+        // Get additional user details
+        $user->id = $_SESSION["user_id"];
+        $user->readOne();
+        $_SESSION["profile_image"] = $user->profile_image;
+        
+        // Redirect user based on role
+        switch($_SESSION["role"]) {
+            case "admin":
+                header("Location: index.php");
+                break;
+            case "advocate":
+                header("Location: advocate-dashboard.php");
+                break;
+            case "client":
+                header("Location: client-dashboard.php");
+                break;
+            default:
+                header("Location: index.php");
         }
+        exit();
+    } else {
+        // Display an error message if credentials are invalid
+        $login_err = "Invalid username or password.";
     }
+}
 }
 ?>
 

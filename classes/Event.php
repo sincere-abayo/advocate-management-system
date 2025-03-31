@@ -15,6 +15,8 @@ class Event {
     public $created_by;
     public $created_at;
     public $updated_at;
+    public $client_id; // Add this property
+    public $advocate_id; // Add this property if not already present
     
     // Constructor
     public function __construct($db) {
@@ -334,5 +336,112 @@ public function getTodayEvents() {
         // Execute query
         $stmt->execute();
     }
+    // Add these methods to the Event class
+
+public function getUpcomingEventsByClient($days = 7) {
+    // Get current date
+    $current_date = date('Y-m-d');
+    
+    // Calculate end date
+    $end_date = date('Y-m-d', strtotime("+{$days} days"));
+    
+    // Query
+    $query = "SELECT e.*, c.case_number 
+              FROM " . $this->table_name . " e
+              LEFT JOIN cases c ON e.case_id = c.id
+              WHERE e.client_id = ? AND e.event_date BETWEEN ? AND ?
+              ORDER BY e.event_date ASC, e.event_time ASC";
+    
+    // Prepare statement
+    $stmt = $this->conn->prepare($query);
+    
+    // Bind parameters
+    $stmt->bindParam(1, $this->client_id);
+    $stmt->bindParam(2, $current_date);
+    $stmt->bindParam(3, $end_date);
+    
+    // Execute query
+    $stmt->execute();
+    
+    return $stmt;
+}
+
+public function getTodayEventsByClient() {
+    // Get current date
+    $current_date = date('Y-m-d');
+    
+    // Query
+    $query = "SELECT e.*, c.case_number 
+              FROM " . $this->table_name . " e
+              LEFT JOIN cases c ON e.case_id = c.id
+              WHERE e.client_id = ? AND e.event_date = ?
+              ORDER BY e.event_time ASC";
+    
+    // Prepare statement
+    $stmt = $this->conn->prepare($query);
+    
+    // Bind parameters
+    $stmt->bindParam(1, $this->client_id);
+    $stmt->bindParam(2, $current_date);
+    
+    // Execute query
+    $stmt->execute();
+    
+    return $stmt;
+}
+// Add these methods to the Event class
+
+public function getUpcomingEventsByAdvocate($days = 7) {
+    // Get current date
+    $current_date = date('Y-m-d');
+    
+    // Calculate end date
+    $end_date = date('Y-m-d', strtotime("+{$days} days"));
+    
+    // Query
+    $query = "SELECT e.*, c.case_number 
+              FROM " . $this->table_name . " e
+              LEFT JOIN cases c ON e.case_id = c.id
+              WHERE e.advocate_id = ? AND e.event_date BETWEEN ? AND ?
+              ORDER BY e.event_date ASC, e.event_time ASC";
+    
+    // Prepare statement
+    $stmt = $this->conn->prepare($query);
+    
+    // Bind parameters
+    $stmt->bindParam(1, $this->advocate_id);
+    $stmt->bindParam(2, $current_date);
+    $stmt->bindParam(3, $end_date);
+    
+    // Execute query
+    $stmt->execute();
+    
+    return $stmt;
+}
+
+public function getTodayEventsByAdvocate() {
+    // Get current date
+    $current_date = date('Y-m-d');
+    
+    // Query
+    $query = "SELECT e.*, c.case_number 
+              FROM " . $this->table_name . " e
+              LEFT JOIN cases c ON e.case_id = c.id
+              WHERE e.advocate_id = ? AND e.event_date = ?
+              ORDER BY e.event_time ASC";
+    
+    // Prepare statement
+    $stmt = $this->conn->prepare($query);
+    
+    // Bind parameters
+    $stmt->bindParam(1, $this->advocate_id);
+    $stmt->bindParam(2, $current_date);
+    
+    // Execute query
+    $stmt->execute();
+    
+    return $stmt;
+}
+
 }
 ?>
