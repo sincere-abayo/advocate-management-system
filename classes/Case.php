@@ -18,6 +18,11 @@ class LegalCase {
     public $priority;
     public $created_at;
     public $updated_at;
+    // Add these to the class properties section
+public $client_name;
+public $client_email;
+public $client_phone;
+
     
     // Constructor
     public function __construct($db) {
@@ -152,7 +157,9 @@ class LegalCase {
             $this->priority = $row['priority'];
             $this->created_at = $row['created_at'];
             $this->updated_at = $row['updated_at'];
-            
+            $this->client_name = $row['client_name'] ?? null;
+$this->client_email = $row['client_email'] ?? null;
+$this->client_phone = $row['client_phone'] ?? null;
             return true;
         }
         
@@ -407,14 +414,14 @@ public function countByStatus($status) {
     }
     
     // Add to case history
-    private function addToHistory($case_id, $action, $description) {
+    public function addToHistory($case_id, $action, $description) {
         // Query
         $query = "INSERT INTO case_history
                 SET
                     case_id = :case_id,
-                    action = :action,
+                    action_type = :action_type,
                     description = :description,
-                    user_id = :user_id";
+                    performed_by = :performed_by";
         
         // Prepare statement
         $stmt = $this->conn->prepare($query);
@@ -424,9 +431,9 @@ public function countByStatus($status) {
         
         // Bind values
         $stmt->bindParam(":case_id", $case_id);
-        $stmt->bindParam(":action", $action);
+        $stmt->bindParam(":action_type", $action);
         $stmt->bindParam(":description", $description);
-        $stmt->bindParam(":user_id", $user_id);
+        $stmt->bindParam(":performed_by", $user_id);
         
         // Execute query
         $stmt->execute();
@@ -501,6 +508,31 @@ public function countByStatus($status) {
         
         return $stmt;
     }
+
+    // Add this method to the LegalCase class
+public function getClientsByAdvocate($advocate_id) {
+    // Query to get all clients associated with an advocate through cases
+    $query = "SELECT DISTINCT c.id as client_id, u.first_name, u.last_name, u.email, u.phone, u.profile_image, 
+                    (SELECT COUNT(*) FROM " . $this->table_name . " WHERE client_id = c.id AND advocate_id = ?) as case_count
+              FROM clients c
+              JOIN " . $this->table_name . " cs ON c.id = cs.client_id
+              JOIN users u ON c.user_id = u.id
+              WHERE cs.advocate_id = ?
+              ORDER BY u.first_name, u.last_name";
+    
+    // Prepare statement
+    $stmt = $this->conn->prepare($query);
+    
+    // Bind parameters
+    $stmt->bindParam(1, $advocate_id);
+    $stmt->bindParam(2, $advocate_id);
+    
+    // Execute query
+    $stmt->execute();
+    
+    return $stmt;
+}
+
 }
 ?>
 

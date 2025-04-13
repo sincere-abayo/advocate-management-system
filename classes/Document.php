@@ -7,6 +7,7 @@ class Document {
     public $id;
     public $case_id;
     public $title;
+    public $file_path;
     public $description;
     public $file_name;
     public $file_type;
@@ -26,7 +27,7 @@ class Document {
         $this->case_id = htmlspecialchars(strip_tags($this->case_id));
         $this->title = htmlspecialchars(strip_tags($this->title));
         $this->description = htmlspecialchars(strip_tags($this->description));
-        $this->file_name = htmlspecialchars(strip_tags($this->file_name));
+        $this->file_path = $this->file_path !== null ? htmlspecialchars(strip_tags($this->file_path)) : null;
         $this->file_type = htmlspecialchars(strip_tags($this->file_type));
         $this->file_size = htmlspecialchars(strip_tags($this->file_size));
         $this->uploaded_by = htmlspecialchars(strip_tags($this->uploaded_by));
@@ -37,7 +38,7 @@ class Document {
                     case_id = :case_id,
                     title = :title,
                     description = :description,
-                    file_name = :file_name,
+                    file_path = :file_path,
                     file_type = :file_type,
                     file_size = :file_size,
                     uploaded_by = :uploaded_by";
@@ -49,7 +50,7 @@ class Document {
         $stmt->bindParam(":case_id", $this->case_id);
         $stmt->bindParam(":title", $this->title);
         $stmt->bindParam(":description", $this->description);
-        $stmt->bindParam(":file_name", $this->file_name);
+        $stmt->bindParam(":file_path", $this->file_path);
         $stmt->bindParam(":file_type", $this->file_type);
         $stmt->bindParam(":file_size", $this->file_size);
         $stmt->bindParam(":uploaded_by", $this->uploaded_by);
@@ -72,7 +73,7 @@ class Document {
                 FROM " . $this->table_name . " d
                 LEFT JOIN users u ON d.uploaded_by = u.id
                 WHERE d.case_id = ?
-                ORDER BY d.created_at DESC";
+                ORDER BY d.upload_date DESC";
         
         // Prepare statement
         $stmt = $this->conn->prepare($query);
@@ -219,14 +220,14 @@ class Document {
     }
     
     // Add to case history
-    private function addToHistory($case_id, $action, $description) {
+    public function addToHistory($case_id, $action, $description) {
         // Query
         $query = "INSERT INTO case_history
                 SET
                     case_id = :case_id,
-                    action = :action,
+                    action_type = :action_type,
                     description = :description,
-                    user_id = :user_id";
+                    performed_by = :performed_by";
         
         // Prepare statement
         $stmt = $this->conn->prepare($query);
@@ -236,9 +237,9 @@ class Document {
         
         // Bind values
         $stmt->bindParam(":case_id", $case_id);
-        $stmt->bindParam(":action", $action);
+        $stmt->bindParam(":action_type", $action);
         $stmt->bindParam(":description", $description);
-        $stmt->bindParam(":user_id", $user_id);
+        $stmt->bindParam(":performed_by", $user_id);
         
         // Execute query
         $stmt->execute();

@@ -1,4 +1,8 @@
 <?php
+// Enable error reporting
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 // Start session
 session_start();
 
@@ -95,9 +99,9 @@ if($_SERVER["REQUEST_METHOD"] == "POST") {
     if(empty($username_err) && empty($password_err) && empty($confirm_password_err) && empty($email_err) && empty($first_name_err) && empty($last_name_err)) {
         
         // Set user properties
+        $user->email = $email;
         $user->username = $username;
         $user->password = $password;
-        $user->email = $email;
         $user->role = $user_type; // Set role based on selection
         $user->first_name = $first_name;
         $user->last_name = $last_name;
@@ -106,8 +110,9 @@ if($_SERVER["REQUEST_METHOD"] == "POST") {
         $user->is_active = 1; // Active by default
         
         // Create the user
-        if($user_id = $user->create()) {
-            // Create client or advocate profile based on user type
+        $user_id = $user->create();
+        if($user_id !== false && $user_id > 0) {
+        //     // Create client or advocate profile based on user type
             if($user_type == "client") {
                 $client = new Client($db);
                 $client->user_id = $user_id;
@@ -115,8 +120,13 @@ if($_SERVER["REQUEST_METHOD"] == "POST") {
                 $client->company = isset($_POST["company"]) ? trim($_POST["company"]) : "";
                 $client->reference_source = isset($_POST["reference_source"]) ? trim($_POST["reference_source"]) : "";
                 $client->notes = "";
-                $client->create();
-            } else if($user_type == "advocate") {
+                if($client->create()) {
+                    $register_success = "Client Account created successfully with Username '$username'. You can now <a href='login.php' class='text-primary hover:underline'>log in</a>.";
+                } else {
+                    $register_err = "Something went wrong. Please try again later.";
+                }
+            } 
+          else if($user_type == "advocate") {
                 $advocate = new Advocate($db);
                 $advocate->user_id = $user_id;
                 $advocate->license_number = isset($_POST["license_number"]) ? trim($_POST["license_number"]) : "";
@@ -125,12 +135,16 @@ if($_SERVER["REQUEST_METHOD"] == "POST") {
                 $advocate->education = isset($_POST["education"]) ? trim($_POST["education"]) : "";
                 $advocate->bio = "";
                 $advocate->hourly_rate = isset($_POST["hourly_rate"]) ? trim($_POST["hourly_rate"]) : 0;
-                $advocate->create();
+               if($advocate->create()) {
+                $register_success = "Client Account created successfully with Username '$username'. You can now <a href='login.php' class='text-primary hover:underline'>log in</a>.";
+            } else {
+                    $register_err = "Something went wrong. Please try again later.";
+                }
             }
-            
-            // Registration successful
-            $register_success = "Account created successfully. You can now <a href='login.php' class='text-primary hover:underline'>log in</a>.";
-            
+            else {
+                $register_err = "Invalid user type $user_type. Please try again.";
+            }
+            $register_success = "Client Account created successfully with Username '$username'. You can now <a href='login.php' class='text-primary hover:underline'>log in</a>.";
             // Clear form data
             $username = $password = $confirm_password = $email = $first_name = $last_name = $phone = $address = "";
         } else {
@@ -177,11 +191,13 @@ if($_SERVER["REQUEST_METHOD"] == "POST") {
         <span class="block sm:inline"><?php echo $register_success; ?></span>
         <p class="mt-2 text-sm">You will be redirected to the login page in 3 seconds...</p>
     </div>
-    <!-- Add this to the head section when registration is successful -->
+    <!--  head section when registration is successful -->
     <script>
-        setTimeout(function() {
+
+       setTimeout(function() {
             window.location.href = "login.php";
-        }, 3000); // 3 seconds
+        }, 3000);
+    
     </script>
 <?php else: ?>
 

@@ -10,6 +10,9 @@ class Event {
     public $description;
     public $event_date;
     public $event_time;
+    public $end_time;
+    public $event_type;
+
     public $location;
     public $reminder;
     public $created_by;
@@ -17,61 +20,79 @@ class Event {
     public $updated_at;
     public $client_id; // Add this property
     public $advocate_id; // Add this property if not already present
-    
+    public $status;
+
+
+    public $case_number;
+    public $case_title;
+    public $client_name;
+    public $advocate_name;
     // Constructor
     public function __construct($db) {
         $this->conn = $db;
     }
     
     // Create event
-    public function create() {
-        // Sanitize inputs
-        $this->case_id = htmlspecialchars(strip_tags($this->case_id));
-        $this->title = htmlspecialchars(strip_tags($this->title));
-        $this->description = htmlspecialchars(strip_tags($this->description));
-        $this->event_date = htmlspecialchars(strip_tags($this->event_date));
-        $this->event_time = htmlspecialchars(strip_tags($this->event_time));
-        $this->location = htmlspecialchars(strip_tags($this->location));
-        $this->reminder = htmlspecialchars(strip_tags($this->reminder));
-        $this->created_by = htmlspecialchars(strip_tags($this->created_by));
-        
-        // Query
-        $query = "INSERT INTO " . $this->table_name . "
-                SET
-                    case_id = :case_id,
-                    title = :title,
-                    description = :description,
-                    event_date = :event_date,
-                    event_time = :event_time,
-                    location = :location,
-                    reminder = :reminder,
-                    created_by = :created_by";
-        
-        // Prepare statement
-        $stmt = $this->conn->prepare($query);
-        
-        // Bind values
-        $stmt->bindParam(":case_id", $this->case_id);
-        $stmt->bindParam(":title", $this->title);
-        $stmt->bindParam(":description", $this->description);
-        $stmt->bindParam(":event_date", $this->event_date);
-        $stmt->bindParam(":event_time", $this->event_time);
-        $stmt->bindParam(":location", $this->location);
-        $stmt->bindParam(":reminder", $this->reminder);
-        $stmt->bindParam(":created_by", $this->created_by);
-        
-        // Execute query
-        if($stmt->execute()) {
-            // Add to case history if associated with a case
-            if($this->case_id > 0) {
-                $this->addToHistory($this->case_id, "Event created", "Event '{$this->title}' scheduled for {$this->event_date}");
-            }
-            
-            return $this->conn->lastInsertId();
+
+public function create() {
+    // Sanitize inputs - check for null values before using strip_tags
+    $this->case_id = $this->case_id !== null ? htmlspecialchars(strip_tags($this->case_id)) : null;
+    $this->title = htmlspecialchars(strip_tags($this->title));
+    $this->description = $this->description !== null ? htmlspecialchars(strip_tags($this->description)) : null;
+    $this->event_date = htmlspecialchars(strip_tags($this->event_date));
+    $this->event_time = htmlspecialchars(strip_tags($this->event_time));
+    $this->end_time = $this->end_time !== null ? htmlspecialchars(strip_tags($this->end_time)) : null;
+    $this->location = $this->location !== null ? htmlspecialchars(strip_tags($this->location)) : null;
+    $this->event_type = $this->event_type !== null ? htmlspecialchars(strip_tags($this->event_type)) : null;
+    $this->client_id = $this->client_id !== null ? htmlspecialchars(strip_tags($this->client_id)) : null;
+    $this->advocate_id = $this->advocate_id !== null ? htmlspecialchars(strip_tags($this->advocate_id)) : null;
+    
+    // Query - update to match the actual database schema
+    $query = "INSERT INTO " . $this->table_name . "
+            SET
+                case_id = :case_id,
+                title = :title,
+                description = :description,
+                event_date = :event_date,
+                event_time = :event_time,
+                end_time = :end_time,
+                location = :location,
+                client_id = :client_id,
+                advocate_id = :advocate_id,
+                event_type = :event_type,
+                status = :status";
+    
+    // Prepare statement
+    $stmt = $this->conn->prepare($query);
+    
+    // Set default status if not provided
+    $this->status = isset($this->status) ? $this->status : 'Scheduled';    
+    // Bind values
+    $stmt->bindParam(":case_id", $this->case_id);
+    $stmt->bindParam(":title", $this->title);
+    $stmt->bindParam(":description", $this->description);
+    $stmt->bindParam(":event_date", $this->event_date);
+    $stmt->bindParam(":event_time", $this->event_time);
+    $stmt->bindParam(":end_time", $this->end_time);
+    $stmt->bindParam(":location", $this->location);
+    $stmt->bindParam(":client_id", $this->client_id);
+    $stmt->bindParam(":advocate_id", $this->advocate_id);
+    $stmt->bindParam(":event_type", $this->event_type);
+    $stmt->bindParam(":status", $this->status);
+    
+    // Execute query
+    if($stmt->execute()) {
+        // Add to case history if associated with a case
+        if($this->case_id > 0) {
+            $this->addToHistory($this->case_id, "Event created", "Event '{$this->title}' scheduled for {$this->event_date}");
         }
         
-        return false;
+        return $this->conn->lastInsertId();
     }
+    
+    return false;
+}
+
     
     // Read all events
     public function read() {
@@ -91,26 +112,30 @@ class Event {
         return $stmt;
     }
     
-    // Read events by case ID
-    public function readByCaseId() {
-        // Query
-        $query = "SELECT e.*, CONCAT(u.first_name, ' ', u.last_name) as creator_name
-                FROM " . $this->table_name . " e
-                LEFT JOIN users u ON e.created_by = u.id
-                WHERE e.case_id = ?
-                ORDER BY e.event_date ASC, e.event_time ASC";
-        
-        // Prepare statement
-        $stmt = $this->conn->prepare($query);
-        
-        // Bind parameter
-        $stmt->bindParam(1, $this->case_id);
-        
-        // Execute query
-        $stmt->execute();
-        
-        return $stmt;
-    }
+// Read events by case ID
+public function readByCaseId() {
+    // Query
+    $query = "SELECT e.*, 
+                CONCAT(u.first_name, ' ', u.last_name) as creator_name
+              FROM " . $this->table_name . " e
+              LEFT JOIN advocates a ON e.advocate_id = a.id
+              LEFT JOIN users u ON a.user_id = u.id
+              WHERE e.case_id = ?
+              ORDER BY e.event_date ASC, e.event_time ASC";
+    
+    // Prepare statement
+    $stmt = $this->conn->prepare($query);
+    
+    // Bind parameter
+    $stmt->bindParam(1, $this->case_id);
+    
+    // Execute query
+    $stmt->execute();
+    
+    return $stmt;
+}
+
+
     
     // Read events by date range
     public function readByDateRange($start_date, $end_date) {
@@ -141,7 +166,7 @@ class Event {
         $query = "SELECT e.*, c.case_number, c.title as case_title, CONCAT(u.first_name, ' ', u.last_name) as creator_name
                 FROM " . $this->table_name . " e
                 LEFT JOIN cases c ON e.case_id = c.id
-                LEFT JOIN users u ON e.created_by = u.id
+                LEFT JOIN users u ON e.advocate_id = u.id
                 WHERE e.id = ?
                 LIMIT 0,1";
         
@@ -317,9 +342,9 @@ public function getTodayEvents() {
         $query = "INSERT INTO case_history
                 SET
                     case_id = :case_id,
-                    action = :action,
+                    action_type = :action_type,
                     description = :description,
-                    user_id = :user_id";
+                    performed_by = :performed_by";
         
         // Prepare statement
         $stmt = $this->conn->prepare($query);
@@ -329,9 +354,9 @@ public function getTodayEvents() {
         
         // Bind values
         $stmt->bindParam(":case_id", $case_id);
-        $stmt->bindParam(":action", $action);
+        $stmt->bindParam(":action_type", $action);
         $stmt->bindParam(":description", $description);
-        $stmt->bindParam(":user_id", $user_id);
+        $stmt->bindParam(":performed_by", $user_id);
         
         // Execute query
         $stmt->execute();
@@ -436,6 +461,26 @@ public function getTodayEventsByAdvocate() {
     // Bind parameters
     $stmt->bindParam(1, $this->advocate_id);
     $stmt->bindParam(2, $current_date);
+    
+    // Execute query
+    $stmt->execute();
+    
+    return $stmt;
+}
+// Add this method to the Event class
+public function readByAdvocate() {
+    // Query
+    $query = "SELECT e.*, c.case_number, c.title as case_title
+              FROM " . $this->table_name . " e
+              LEFT JOIN cases c ON e.case_id = c.id
+              WHERE e.advocate_id = ?
+              ORDER BY e.event_date ASC, e.event_time ASC";
+    
+    // Prepare statement
+    $stmt = $this->conn->prepare($query);
+    
+    // Bind parameter
+    $stmt->bindParam(1, $this->advocate_id);
     
     // Execute query
     $stmt->execute();

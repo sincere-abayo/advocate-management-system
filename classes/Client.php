@@ -254,5 +254,31 @@ class Client {
         
         return $row['total'];
     }
+    // Add this method to the LegalCase class
+
+public function getClientsByAdvocate($advocate_id) {
+
+    $query = "SELECT DISTINCT clients.id AS client_id, clients.first_name, clients.last_name, clients.email, clients.phone, 
+
+                     COUNT(cases.id) AS case_count
+
+              FROM clients
+
+              INNER JOIN cases ON clients.id = cases.client_id
+
+              WHERE cases.advocate_id = :advocate_id
+
+              GROUP BY clients.id";
+
+    $stmt = $this->conn->prepare($query);
+
+    $stmt->bindParam(':advocate_id', $advocate_id);
+
+    $stmt->execute();
+
+    return $stmt;
+
+}
+
 }
 ?>

@@ -65,7 +65,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST") {
                 header("Location: index.php");
                 break;
             case "advocate":
-                header("Location: advocate-dashboard.php");
+                header("Location: advocate/advocate-dashboard.php");
                 break;
             case "client":
                 header("Location: client-dashboard.php");

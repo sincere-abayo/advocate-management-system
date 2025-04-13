@@ -16,7 +16,9 @@
     
     <!-- Custom CSS -->
     <link rel="stylesheet" href="assets/css/style.css">
-    
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://unpkg.com/@popperjs/core@2"></script>
+<script src="https://unpkg.com/tippy.js@6"></script>
     <script>
         tailwind.config = {
             theme: {

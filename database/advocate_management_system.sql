@@ -164,7 +164,7 @@ CREATE TABLE `events` (
   `end_time` time DEFAULT NULL,
   `location` varchar(255) DEFAULT NULL,
   `case_id` int(11) DEFAULT NULL,
-  `client_id` int(11) DEFAULT NULL,
+  `client_id` int(11) DEFAULT NULL, 
   `advocate_id` int(11) DEFAULT NULL,
   `event_type` varchar(50) DEFAULT NULL,
   `status` varchar(50) DEFAULT 'Scheduled',
@@ -179,6 +179,8 @@ CREATE TABLE `events` (
   CONSTRAINT `events_ibfk_2` FOREIGN KEY (`client_id`) REFERENCES `clients` (`id`) ON DELETE SET NULL,
   CONSTRAINT `events_ibfk_3` FOREIGN KEY (`advocate_id`) REFERENCES `advocates` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
 CREATE TABLE `tasks` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `title` varchar(255) NOT NULL,

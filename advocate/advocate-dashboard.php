@@ -4,23 +4,23 @@ session_start();
 
 // Check if user is logged in
 if(!isset($_SESSION['user_id'])) {
-    header("Location: login.php");
+    header("Location: ../login.php");
     exit();
 }
 
 // Check if user has advocate role
 if($_SESSION['role'] != 'advocate') {
-    header("Location: login.php");
+    header("Location: ../login.php");
     exit();
 }
 
 // Include database and required classes
-include_once 'config/database.php';
-include_once 'classes/Case.php';
-include_once 'classes/Client.php';
-include_once 'classes/Advocate.php';
-include_once 'classes/Event.php';
-include_once 'classes/Task.php';
+include_once '../config/database.php';
+include_once '../classes/Case.php';
+include_once '../classes/Client.php';
+include_once '../classes/Advocate.php';
+include_once '../classes/Event.php';
+include_once '../classes/Task.php';
 
 // Get database connection
 $database = new Database();
@@ -59,7 +59,7 @@ if($advocate_obj->readByUserId()) {
 $page_title = "Advocate Dashboard - Legal Case Management System";
 
 // Include header
-include_once 'templates/advocate-header.php';
+include_once '../templates/advocate-header.php';
 ?>
 
 <div class="container mx-auto px-4 py-6">

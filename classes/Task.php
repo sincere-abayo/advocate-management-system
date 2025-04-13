@@ -10,11 +10,14 @@ class Task {
     public $description;
     public $assigned_to;
     public $due_date;
-    public $status;
+    public $status; 
     public $priority;
-    public $created_by;
+    public $assigned_by; 
+    public $client_id;
+    public $advocate_id;
     public $created_at;
     public $updated_at;
+    public $completed_at;
     
     // Constructor
     public function __construct($db) {
@@ -31,7 +34,7 @@ class Task {
         $this->due_date = htmlspecialchars(strip_tags($this->due_date));
         $this->status = htmlspecialchars(strip_tags($this->status));
         $this->priority = htmlspecialchars(strip_tags($this->priority));
-        $this->created_by = htmlspecialchars(strip_tags($this->created_by));
+        $this->assigned_by = htmlspecialchars(strip_tags($this->assigned_by));
         
         // Query
         $query = "INSERT INTO " . $this->table_name . "
@@ -43,7 +46,7 @@ class Task {
                     due_date = :due_date,
                     status = :status,
                     priority = :priority,
-                    created_by = :created_by";
+                    assigned_by = :assigned_by";
         
         // Prepare statement
         $stmt = $this->conn->prepare($query);
@@ -56,7 +59,7 @@ class Task {
         $stmt->bindParam(":due_date", $this->due_date);
         $stmt->bindParam(":status", $this->status);
         $stmt->bindParam(":priority", $this->priority);
-        $stmt->bindParam(":created_by", $this->created_by);
+        $stmt->bindParam(":assigned_by", $this->assigned_by);
         
         // Execute query
         if($stmt->execute()) {
@@ -68,30 +71,31 @@ class Task {
         
         return false;
     }
+     
+// Read tasks by case ID
+public function readByCaseId() {
+    // Query
+    $query = "SELECT t.*,
+                CONCAT(a.first_name, ' ', a.last_name) as assigned_name,
+                CONCAT(c.first_name, ' ', c.last_name) as creator_name
+              FROM " . $this->table_name . " t
+              LEFT JOIN users a ON t.assigned_to = a.id
+              LEFT JOIN users c ON t.assigned_by = c.id 
+              WHERE t.case_id = ?
+              ORDER BY t.due_date ASC";
     
-    // Read tasks by case ID
-    public function readByCaseId() {
-        // Query
-        $query = "SELECT t.*, 
-                    CONCAT(a.first_name, ' ', a.last_name) as assigned_name,
-                    CONCAT(c.first_name, ' ', c.last_name) as creator_name
-                FROM " . $this->table_name . " t
-                LEFT JOIN users a ON t.assigned_to = a.id
-                LEFT JOIN users c ON t.created_by = c.id
-                WHERE t.case_id = ?
-                ORDER BY t.due_date ASC";
-        
-        // Prepare statement
-        $stmt = $this->conn->prepare($query);
-        
-        // Bind parameter
-        $stmt->bindParam(1, $this->case_id);
-        
-        // Execute query
-        $stmt->execute();
-        
-        return $stmt;
-    }
+    // Prepare statement
+    $stmt = $this->conn->prepare($query);
+    
+    // Bind parameter
+    $stmt->bindParam(1, $this->case_id);
+    
+    // Execute query
+    $stmt->execute();
+    
+    return $stmt;
+}
+
     
     // Read tasks by assigned user
     public function readByAssignedUser() {
@@ -101,7 +105,7 @@ class Task {
                     CONCAT(cr.first_name, ' ', cr.last_name) as creator_name
                 FROM " . $this->table_name . " t
                 LEFT JOIN cases c ON t.case_id = c.id
-                LEFT JOIN users cr ON t.created_by = cr.id
+                LEFT JOIN users cr ON t.assigned_by = cr.id
                 WHERE t.assigned_to = ?
                 ORDER BY t.due_date ASC";
         
@@ -125,7 +129,7 @@ class Task {
                     CONCAT(c.first_name, ' ', c.last_name) as creator_name
                 FROM " . $this->table_name . " t
                 LEFT JOIN users a ON t.assigned_to = a.id
-                LEFT JOIN users c ON t.created_by = c.id
+                LEFT JOIN users c ON t.assigned_by = c.id
                 WHERE t.id = ?
                 LIMIT 0,1";
         
@@ -155,7 +159,7 @@ class Task {
             $this->due_date = $row['due_date'];
             $this->status = $row['status'];
             $this->priority = $row['priority'];
-            $this->created_by = $row['created_by'];
+            $this->assigned_by = $row['assigned_by'];
             $this->created_at = $row['created_at'];
             $this->updated_at = $row['updated_at'];
             
@@ -235,6 +239,42 @@ class Task {
             
             // Add to case history
             $this->addToHistory($this->case_id, "Task status changed", "Task '{$this->title}' status changed to {$this->status}");
+            
+            return true;
+        }
+        
+        return false;
+    }
+    public function markAsComplete() {
+        // Sanitize inputs
+        $this->id = htmlspecialchars(strip_tags($this->id));
+        
+        // Set status and completed_at
+        $this->status = 'Completed';
+        $completed_at = date('Y-m-d H:i:s');
+        
+        // Query
+        $query = "UPDATE " . $this->table_name . "
+                SET
+                    status = :status,
+                    completed_at = :completed_at
+                WHERE
+                    id = :id";
+        
+        // Prepare statement
+        $stmt = $this->conn->prepare($query);
+        
+        // Bind values
+        $stmt->bindParam(":status", $this->status);
+        $stmt->bindParam(":completed_at", $completed_at);
+        $stmt->bindParam(":id", $this->id);
+        
+        // Execute query
+        if($stmt->execute()) {
+            // Add to case history
+            if($this->case_id) {
+                $this->addToHistory($this->case_id, "Task completed", "Task '{$this->title}' has been marked as completed");
+            }
             
             return true;
         }
@@ -337,9 +377,9 @@ class Task {
         $query = "INSERT INTO case_history
                 SET
                     case_id = :case_id,
-                    action = :action,
+                    action_type = :action_type,
                     description = :description,
-                    user_id = :user_id";
+                    performed_by = :performed_by";
         
         // Prepare statement
         $stmt = $this->conn->prepare($query);
@@ -349,9 +389,9 @@ class Task {
         
         // Bind values
         $stmt->bindParam(":case_id", $case_id);
-        $stmt->bindParam(":action", $action);
+        $stmt->bindParam(":action_type", $action);
         $stmt->bindParam(":description", $description);
-        $stmt->bindParam(":user_id", $user_id);
+        $stmt->bindParam(":performed_by", $user_id);
         
         // Execute query
         $stmt->execute();
