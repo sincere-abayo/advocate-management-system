@@ -447,5 +447,30 @@ public function getTasksByStatus($status) {
     return $stmt;
 }
 
+/**
+ * Read all tasks assigned to the current user
+ * @return PDOStatement
+ */
+public function readAllByUser() {
+    // Query
+    $query = "SELECT t.*, 
+                c.id as case_id, c.case_number, c.title as case_title
+              FROM " . $this->table_name . " t
+              LEFT JOIN cases c ON t.case_id = c.id
+              WHERE t.assigned_to = ?
+              ORDER BY t.due_date ASC";
+    
+    // Prepare statement
+    $stmt = $this->conn->prepare($query);
+    
+    // Bind parameter
+    $stmt->bindParam(1, $this->assigned_to);
+    
+    // Execute query
+    $stmt->execute();
+    
+    return $stmt;
+}
+
 }
 ?>

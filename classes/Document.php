@@ -244,5 +244,61 @@ class Document {
         // Execute query
         $stmt->execute();
     }
+    /**
+ * Read all documents
+ * @return PDOStatement
+ */
+public function readAll() {
+    // Query to get all documents with case information
+    $query = "SELECT d.*, c.id as case_id, c.case_number, c.title as case_title,
+                CONCAT(u.first_name, ' ', u.last_name) as uploader_name
+              FROM " . $this->table_name . " d
+              LEFT JOIN cases c ON d.case_id = c.id
+              LEFT JOIN users u ON d.uploaded_by = u.id
+              ORDER BY d.upload_date DESC";
+    
+    // Prepare statement
+    $stmt = $this->conn->prepare($query);
+    
+    // Execute query
+    $stmt->execute();
+    
+    return $stmt;
 }
+
+/**
+ * Search documents
+ * @param string $keywords Keywords to search for
+ * @return PDOStatement
+ */
+public function search($keywords) {
+    // Query to search documents
+    $query = "SELECT d.*, c.id as case_id, c.case_number, c.title as case_title,
+                CONCAT(u.first_name, ' ', u.last_name) as uploader_name
+              FROM " . $this->table_name . " d
+              LEFT JOIN cases c ON d.case_id = c.id
+              LEFT JOIN users u ON d.uploaded_by = u.id
+              WHERE d.title LIKE ? OR d.description LIKE ? OR c.case_number LIKE ?
+              ORDER BY d.upload_date DESC";
+    
+    // Prepare statement
+    $stmt = $this->conn->prepare($query);
+    
+    // Sanitize keywords
+    $keywords = htmlspecialchars(strip_tags($keywords));
+    $keywords = "%{$keywords}%";
+    
+    // Bind parameters
+    $stmt->bindParam(1, $keywords);
+    $stmt->bindParam(2, $keywords);
+    $stmt->bindParam(3, $keywords);
+    
+    // Execute query
+    $stmt->execute();
+    
+    return $stmt;
+}
+
+}
+
 ?>

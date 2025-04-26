@@ -1,4 +1,7 @@
 <?php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
 // Start session
 session_start();
 
@@ -18,7 +21,6 @@ if($_SESSION['role'] != 'advocate') {
 include_once '../config/database.php';
 include_once '../classes/Case.php';
 include_once '../classes/Client.php';
-include_once '../classes/Advocate.php';
 include_once '../classes/Event.php';
 include_once '../classes/Task.php';
 
@@ -28,32 +30,21 @@ $db = $database->getConnection();
 
 // Initialize objects
 $case_obj = new LegalCase($db);
-$advocate_obj = new Advocate($db);
 $event_obj = new Event($db);
 $task_obj = new Task($db);
 
-// Get advocate ID
-$advocate_obj->user_id = $_SESSION['user_id'];
-if($advocate_obj->readByUserId()) {
-    $advocate_id = $advocate_obj->id;
-    
-    // Set advocate ID for case object
-    $case_obj->advocate_id = $advocate_id;
-    
-    // Get cases assigned to this advocate
-    $advocate_cases = $case_obj->readByAdvocate();
-    
-    // Get upcoming events for this advocate
-    $event_obj->advocate_id = $advocate_id;
-    $upcoming_events = $event_obj->getUpcomingEventsByAdvocate(7);
-    
-    // Get today's events for this advocate
-    $today_events = $event_obj->getTodayEventsByAdvocate();
-    
-    // Get tasks assigned to this advocate
-    $task_obj->assigned_to = $_SESSION['user_id'];
-    $pending_tasks = $task_obj->getTasksByStatus('Pending');
-}
+// Get cases - no advocate filtering needed as this is a single advocate system
+$advocate_cases = $case_obj->readAll();
+
+// Get upcoming events - no advocate filtering needed
+$upcoming_events = $event_obj->getUpcomingEvents(7);
+
+// Get today's events - no advocate filtering needed
+$today_events = $event_obj->getTodayEvents();
+
+// Get tasks assigned to this user
+$task_obj->assigned_to = $_SESSION['user_id'];
+$pending_tasks = $task_obj->getTasksByStatus('Pending');
 
 // Set page title
 $page_title = "Advocate Dashboard - Legal Case Management System";
@@ -104,7 +95,7 @@ include_once '../templates/advocate-header.php';
                                         <?php endif; ?>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                        <a href="cases-view.php?id=<?php echo $case['id']; ?>" class="text-indigo-600 hover:text-indigo-900">View</a>
+                                        <a href="advocate-case-view.php?id=<?php echo $case['id']; ?>" class="text-indigo-600 hover:text-indigo-900">View</a>
                                     </td>
                                 </tr>
                             <?php endwhile; ?>
@@ -112,11 +103,11 @@ include_once '../templates/advocate-header.php';
                     </table>
                 </div>
             <?php else: ?>
-                <p class="text-gray-500 text-center py-4">No cases assigned to you yet.</p>
+                <p class="text-gray-500 text-center py-4">No cases found.</p>
             <?php endif; ?>
             
             <div class="mt-4 text-right">
-                <a href="cases.php" class="text-indigo-600 hover:text-indigo-900 font-medium">View all cases →</a>
+                <a href="advocate-cases.php" class="text-indigo-600 hover:text-indigo-900 font-medium">View all cases →</a>
             </div>
         </div>
     </div>
@@ -231,5 +222,5 @@ include_once '../templates/advocate-header.php';
 
 <?php
 // Include footer
-include_once 'templates/footer.php';
+include_once '../templates/footer.php';
 ?>

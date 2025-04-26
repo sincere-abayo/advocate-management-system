@@ -195,8 +195,8 @@ public function readByCaseId() {
             $this->event_date = $row['event_date'];
             $this->event_time = $row['event_time'];
             $this->location = $row['location'];
-            $this->reminder = $row['reminder'];
-            $this->created_by = $row['created_by'];
+            $this->reminder = isset($row['reminder']) ? $row['reminder'] : null;
+            $this->created_by = isset($row['created_by']) ? $row['created_by'] : null;
             $this->created_at = $row['created_at'];
             $this->updated_at = $row['updated_at'];
             
@@ -215,31 +215,29 @@ public function readByCaseId() {
         $this->event_date = htmlspecialchars(strip_tags($this->event_date));
         $this->event_time = htmlspecialchars(strip_tags($this->event_time));
         $this->location = htmlspecialchars(strip_tags($this->location));
-        $this->reminder = htmlspecialchars(strip_tags($this->reminder));
+        $this->reminder = $this->reminder !== null ? htmlspecialchars(strip_tags($this->reminder)) : null;
         
         // Query
         $query = "UPDATE " . $this->table_name . "
-                SET
-                    title = :title,
-                    description = :description,
-                    event_date = :event_date,
-                    event_time = :event_time,
-                    location = :location,
-                    reminder = :reminder
-                WHERE
-                    id = :id";
+        SET
+            title = :title,
+            description = :description,
+            event_date = :event_date,
+            event_time = :event_time,
+            location = :location
+        WHERE
+            id = :id";
         
         // Prepare statement
         $stmt = $this->conn->prepare($query);
         
         // Bind values
-        $stmt->bindParam(":title", $this->title);
-        $stmt->bindParam(":description", $this->description);
-        $stmt->bindParam(":event_date", $this->event_date);
-        $stmt->bindParam(":event_time", $this->event_time);
-        $stmt->bindParam(":location", $this->location);
-        $stmt->bindParam(":reminder", $this->reminder);
-        $stmt->bindParam(":id", $this->id);
+$stmt->bindParam(":title", $this->title);
+$stmt->bindParam(":description", $this->description);
+$stmt->bindParam(":event_date", $this->event_date);
+$stmt->bindParam(":event_time", $this->event_time);
+$stmt->bindParam(":location", $this->location);
+$stmt->bindParam(":id", $this->id);
         
         // Execute query
         if($stmt->execute()) {
@@ -488,5 +486,21 @@ public function readByAdvocate() {
     return $stmt;
 }
 
+// Add this method to the Event class if it doesn't exist
+public function readAll() {
+    // Query to get all events with case information
+    $query = "SELECT e.*, c.id as case_id, c.case_number, c.title as case_title
+              FROM " . $this->table_name . " e
+              LEFT JOIN cases c ON e.case_id = c.id
+              ORDER BY e.event_date ASC, e.event_time ASC";
+    
+    // Prepare statement
+    $stmt = $this->conn->prepare($query);
+    
+    // Execute query
+    $stmt->execute();
+    
+    return $stmt;
+}
 }
 ?>

@@ -22,7 +22,6 @@ if(!isset($_GET['id']) || empty($_GET['id'])) {
 
 // Include database and required classes
 include_once '../config/database.php';
-include_once '../classes/Advocate.php';
 include_once '../classes/Client.php';
 include_once '../classes/Case.php';
 include_once '../classes/Event.php';
@@ -32,17 +31,9 @@ $database = new Database();
 $db = $database->getConnection();
 
 // Initialize objects
-$advocate_obj = new Advocate($db);
 $client_obj = new Client($db);
 $case_obj = new LegalCase($db);
 $event_obj = new Event($db);
-
-// Get advocate ID
-$advocate_obj->user_id = $_SESSION['user_id'];
-if(!$advocate_obj->readByUserId()) {
-    header("Location: advocate-dashboard.php");
-    exit();
-}
 
 // Set event ID
 $event_obj->id = $_GET['id'];
@@ -53,18 +44,11 @@ if(!$event_obj->readOne()) {
     exit();
 }
 
-// Check if the event belongs to the logged-in advocate
-if($event_obj->advocate_id != $advocate_obj->id) {
-    header("Location: advocate-calendar.php");
-    exit();
-}
+// Get cases
+$cases = $case_obj->readAll();
 
-// Get cases for this advocate
-$case_obj->advocate_id = $advocate_obj->id;
-$cases = $case_obj->readByAdvocate();
-
-// Get clients for this advocate
-$clients = $case_obj->getClientsByAdvocate($advocate_obj->id);
+// Get clients
+$clients = $client_obj->read();
 
 // Process form submission
 $update_success = $update_error = '';
@@ -129,10 +113,89 @@ include_once '../templates/advocate-header.php';
             <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"] . "?id=" . $event_obj->id); ?>" method="post">
                 <div class="mb-4">
                     <label for="title" class="block text-sm font-medium text-gray-700 mb-1">Title</label>
-                    <input type="text" id="title" name="title" value="<?php echo htmlspecialchars($event_obj->title); ?>" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" required>
+                    <input type="text" id="title" name="title" value="<?php echo htmlspecialchars($event_obj->title ?? ''); ?>" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" required>
                 </div>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                     <div>
                         <label for="event_date" class="block text-sm font-medium text-gray-700 mb-1">Date</label>
-                        <input type="date" id="event_date" name="event_date" value="<?php echo htmlspecialchars($event_obj->event_date); ?>" class="bg
+                        <input type="date" id="event_date" name="event_date" value="<?php echo htmlspecialchars($event_obj->event_date ?? ''); ?>" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" required>
+                    </div>
+                    <div>
+                        <label for="event_type" class="block text-sm font-medium text-gray-700 mb-1">Event Type</label>
+                        <select id="event_type" name="event_type" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                            <option value="Hearing" <?php echo ($event_obj->event_type == 'Hearing') ? 'selected' : ''; ?>>Hearing</option>
+                            <option value="Meeting" <?php echo ($event_obj->event_type == 'Meeting') ? 'selected' : ''; ?>>Meeting</option>
+                            <option value="Deadline" <?php echo ($event_obj->event_type == 'Deadline') ? 'selected' : ''; ?>>Deadline</option>
+                            <option value="Reminder" <?php echo ($event_obj->event_type == 'Reminder') ? 'selected' : ''; ?>>Reminder</option>
+                            <option value="Other" <?php echo ($event_obj->event_type == 'Other') ? 'selected' : ''; ?>>Other</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label for="event_time" class="block text-sm font-medium text-gray-700 mb-1">Start Time</label>
+                        <input type="time" id="event_time" name="event_time" value="<?php echo htmlspecialchars($event_obj->event_time ?? ''); ?>" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" required>
+                    </div>
+                    <div>
+                        <label for="end_time" class="block text-sm font-medium text-gray-700 mb-1">End Time (optional)</label>
+                        <input type="time" id="end_time" name="end_time" value="<?php echo htmlspecialchars($event_obj->end_time ?? ''); ?>" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <label for="location" class="block text-sm font-medium text-gray-700 mb-1">Location</label>
+                    <input type="text" id="location" name="location" value="<?php echo htmlspecialchars($event_obj->location ?? ''); ?>" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label for="case_id" class="block text-sm font-medium text-gray-700 mb-1">Related Case (optional)</label>
+                        <select id="case_id" name="case_id" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                            <option value="">Select a case</option>
+                            <?php 
+                            if($cases && $cases->rowCount() > 0) {
+                                while($case = $cases->fetch(PDO::FETCH_ASSOC)) {
+                                    $selected = ($event_obj->case_id == $case['id']) ? 'selected' : '';
+                                    echo '<option value="' . $case['id'] . '" ' . $selected . '>' . htmlspecialchars($case['case_number'] . ' - ' . $case['title']) . '</option>';
+                                }
+                            }
+                            ?>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="client_id" class="block text-sm font-medium text-gray-700 mb-1">Related Client (optional)</label>
+                        <select id="client_id" name="client_id" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                            <option value="">Select a client</option>
+                            <?php 
+                            if($clients && $clients->rowCount() > 0) {
+                                while($client = $clients->fetch(PDO::FETCH_ASSOC)) {
+                                    $selected = ($event_obj->client_id == $client['id']) ? 'selected' : '';
+                                    echo '<option value="' . $client['id'] . '" ' . $selected . '>' . htmlspecialchars($client['first_name'] . ' ' . $client['last_name']) . '</option>';
+                                }
+                            }
+                            ?>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <label for="description" class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                    <textarea id="description" name="description" rows="4" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"><?php echo htmlspecialchars($event_obj->description ?? ''); ?></textarea>
+                </div>
+                
+                <div class="flex justify-end">
+                    <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg text-sm px-5 py-2.5 text-center">
+                        Update Event
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<?php
+// Include footer
+include_once '../templates/footer.php';
+?>

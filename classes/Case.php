@@ -192,31 +192,28 @@ $this->client_phone = $row['client_phone'] ?? null;
         return $stmt;
     }
     
-    // Read cases by client
-    public function readByClient() {
+    // Read all cases
+    public function readAll() {
         // Query
         $query = "SELECT c.*, 
                     cl.id as client_id, CONCAT(cu.first_name, ' ', cu.last_name) as client_name,
-                    a.id as advocate_id, CONCAT(au.first_name, ' ', au.last_name) as advocate_name
+                    CONCAT(au.first_name, ' ', au.last_name) as advocate_name
                 FROM " . $this->table_name . " c
                 LEFT JOIN clients cl ON c.client_id = cl.id
                 LEFT JOIN users cu ON cl.user_id = cu.id
-                LEFT JOIN advocates a ON c.advocate_id = a.id
-                LEFT JOIN users au ON a.user_id = au.id
-                WHERE c.client_id = ?
+                LEFT JOIN users au ON c.advocate_id = au.id
                 ORDER BY c.created_at DESC";
         
         // Prepare statement
         $stmt = $this->conn->prepare($query);
-        
-        // Bind parameter
-        $stmt->bindParam(1, $this->client_id);
         
         // Execute query
         $stmt->execute();
         
         return $stmt;
     }
+
+
     
     // Update case
     public function update() {
@@ -509,29 +506,41 @@ public function countByStatus($status) {
         return $stmt;
     }
 
-    // Add this method to the LegalCase class
-public function getClientsByAdvocate($advocate_id) {
-    // Query to get all clients associated with an advocate through cases
-    $query = "SELECT DISTINCT c.id as client_id, u.first_name, u.last_name, u.email, u.phone, u.profile_image, 
-                    (SELECT COUNT(*) FROM " . $this->table_name . " WHERE client_id = c.id AND advocate_id = ?) as case_count
-              FROM clients c
-              JOIN " . $this->table_name . " cs ON c.id = cs.client_id
-              JOIN users u ON c.user_id = u.id
-              WHERE cs.advocate_id = ?
-              ORDER BY u.first_name, u.last_name";
+public function getClientsByAdvocate() {
+    $query = "SELECT DISTINCT c.id AS client_id, u.first_name, u.last_name, u.email, u.phone, 
+                 COUNT(cases.id) AS case_count
+          FROM clients c
+          INNER JOIN cases ON c.id = cases.client_id
+          LEFT JOIN users u ON c.user_id = u.id
+          GROUP BY c.id";
+
+    $stmt = $this->conn->prepare($query);
+    $stmt->execute();
+
+    return $stmt;
+}
+// Add this method to the Case class if it doesn't exist
+public function readByClient() {
+    // Query
+    $query = "SELECT c.*, 
+                CONCAT(au.first_name, ' ', au.last_name) as advocate_name
+            FROM " . $this->table_name . " c
+            LEFT JOIN users au ON c.advocate_id = au.id
+            WHERE c.client_id = ?
+            ORDER BY c.created_at DESC";
     
     // Prepare statement
     $stmt = $this->conn->prepare($query);
     
-    // Bind parameters
-    $stmt->bindParam(1, $advocate_id);
-    $stmt->bindParam(2, $advocate_id);
+    // Bind parameter
+    $stmt->bindParam(1, $this->client_id);
     
     // Execute query
     $stmt->execute();
     
     return $stmt;
 }
+
 
 }
 ?>

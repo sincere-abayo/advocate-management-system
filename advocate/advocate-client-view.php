@@ -22,7 +22,6 @@ if(!isset($_GET['id']) || empty($_GET['id'])) {
 
 // Include database and required classes
 include_once '../config/database.php';
-include_once '../classes/Advocate.php';
 include_once '../classes/Client.php';
 include_once '../classes/Case.php';
 
@@ -31,16 +30,8 @@ $database = new Database();
 $db = $database->getConnection();
 
 // Initialize objects
-$advocate_obj = new Advocate($db);
 $client_obj = new Client($db);
 $case_obj = new LegalCase($db);
-
-// Get advocate ID
-$advocate_obj->user_id = $_SESSION['user_id'];
-if(!$advocate_obj->readByUserId()) {
-    header("Location: advocate-dashboard.php");
-    exit();
-}
 
 // Set client ID
 $client_obj->id = $_GET['id'];
@@ -51,16 +42,9 @@ if(!$client_obj->readOne()) {
     exit();
 }
 
-// Check if the client is associated with this advocate
-$case_obj->advocate_id = $advocate_obj->id;
+// Get client cases - no advocate filtering needed for single advocate system
 $case_obj->client_id = $client_obj->id;
-if(!$case_obj->checkClientAdvocateAssociation()) {
-    header("Location: advocate-clients.php");
-    exit();
-}
-
-// Get client cases
-$client_cases = $case_obj->readByClientAndAdvocate();
+$client_cases = $case_obj->readByClient();
 
 // Set page title
 $page_title = "Client Details - " . $client_obj->first_name . " " . $client_obj->last_name;

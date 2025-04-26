@@ -11,6 +11,15 @@ class Client {
     public $reference_source;
     public $notes;
     
+     // User properties (from joined user table)
+     public $first_name;
+     public $last_name;
+     public $email;
+     public $phone;
+     public $address;
+     public $profile_image;
+     public $is_active;
+     public $created_at;
     // Constructor
     public function __construct($db) {
         $this->conn = $db;
@@ -70,44 +79,56 @@ class Client {
     }
     
     // Read single client
-    public function readOne() {
-        // Query
-        $query = "SELECT c.*, u.first_name, u.last_name, u.email, u.phone, u.address, u.profile_image, u.is_active
-                FROM " . $this->table_name . " c
-                LEFT JOIN users u ON c.user_id = u.id
-                WHERE c.id = ?
-                LIMIT 0,1";
+  // Read single client
+public function readOne() {
+    // Query
+    $query = "SELECT c.*, u.first_name, u.last_name, u.email, u.phone, u.address, u.profile_image, u.is_active, u.created_at
+            FROM " . $this->table_name . " c
+            LEFT JOIN users u ON c.user_id = u.id
+            WHERE c.id = ?
+            LIMIT 0,1";
+    
+    // Prepare statement
+    $stmt = $this->conn->prepare($query);
+    
+    // Bind parameter
+    $stmt->bindParam(1, $this->id);
+    
+    // Execute query
+    $stmt->execute();
+    
+    // Get row count
+    $num = $stmt->rowCount();
+    
+    // If client exists
+    if($num > 0) {
+        // Get record details
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
         
-        // Prepare statement
-        $stmt = $this->conn->prepare($query);
+        // Set properties
+        $this->id = $row['id'];
+        $this->user_id = $row['user_id'];
+        $this->occupation = $row['occupation'];
+        $this->company = $row['company'];
+        $this->reference_source = $row['reference_source'];
+        $this->notes = $row['notes'];
         
-        // Bind parameter
-        $stmt->bindParam(1, $this->id);
+        // Set user properties
+        $this->first_name = $row['first_name'];
+        $this->last_name = $row['last_name'];
+        $this->email = $row['email'];
+        $this->phone = $row['phone'];
+        $this->address = $row['address'];
+        $this->profile_image = $row['profile_image'];
+        $this->is_active = $row['is_active'];
+        $this->created_at = $row['created_at'];
         
-        // Execute query
-        $stmt->execute();
-        
-        // Get row count
-        $num = $stmt->rowCount();
-        
-        // If client exists
-        if($num > 0) {
-            // Get record details
-            $row = $stmt->fetch(PDO::FETCH_ASSOC);
-            
-            // Set properties
-            $this->id = $row['id'];
-            $this->user_id = $row['user_id'];
-            $this->occupation = $row['occupation'];
-            $this->company = $row['company'];
-            $this->reference_source = $row['reference_source'];
-            $this->notes = $row['notes'];
-            
-            return true;
-        }
-        
-        return false;
+        return true;
     }
+    
+    return false;
+}
+
     
     // Read client by user ID
     public function readByUserId() {
@@ -279,6 +300,26 @@ public function getClientsByAdvocate($advocate_id) {
     return $stmt;
 
 }
+
+public function countByClient() {
+    // Query to count cases for a specific client
+    $query = "SELECT COUNT(*) as total FROM cases WHERE client_id = ?";
+    
+    // Prepare statement
+    $stmt = $this->conn->prepare($query);
+    
+    // Bind parameter
+    $stmt->bindParam(1, $this->id);  // Use $this->id instead of $this->client_id
+    
+    // Execute query
+    $stmt->execute();
+    
+    // Get row
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    return $row['total'];
+}
+
 
 }
 ?>

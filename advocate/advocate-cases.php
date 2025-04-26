@@ -17,27 +17,16 @@ if($_SESSION['role'] != 'advocate') {
 // Include database and required classes
 include_once '../config/database.php';
 include_once '../classes/Case.php';
-include_once '../classes/Advocate.php';
 
 // Get database connection
 $database = new Database();
 $db = $database->getConnection();
 
-// Initialize objects
+// Initialize case object
 $case_obj = new LegalCase($db);
-$advocate_obj = new Advocate($db);
 
-// Get advocate ID
-$advocate_obj->user_id = $_SESSION['user_id'];
-if($advocate_obj->readByUserId()) {
-    $advocate_id = $advocate_obj->id;
-    
-    // Set advocate ID for case object
-    $case_obj->advocate_id = $advocate_id;
-    
-    // Get cases assigned to this advocate
-    $advocate_cases = $case_obj->readByAdvocate();
-}
+// Get all cases - no advocate filtering needed for single advocate system
+$advocate_cases = $case_obj->readAll();
 
 // Set page title
 $page_title = "My Cases - Legal Case Management System";
@@ -50,10 +39,6 @@ include_once '../templates/advocate-header.php';
     <div class="flex justify-between items-center mb-6">
         <h1 class="text-3xl font-semibold text-gray-800">My Cases</h1>
         <div class="flex space-x-2">
-            <!-- <a href="advocate-case-search.php" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium">
-                <i class="fas fa-search mr-2"></i>Search
-            </a> -->
-            <!-- button for creating a new case -->
             <a href="advocate-case-add.php" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium">
                 <i class="fas fa-plus mr-2"></i>Add Case
             </a>
@@ -64,7 +49,7 @@ include_once '../templates/advocate-header.php';
     <div class="bg-white rounded-lg shadow overflow-hidden">
         <div class="p-4 border-b border-gray-200 flex justify-between items-center">
             <h2 class="text-lg font-semibold text-gray-800">All Cases</h2>
-</div>
+        </div>
         
         <div class="overflow-x-auto">
             <?php if($advocate_cases && $advocate_cases->rowCount() > 0): ?>
@@ -125,13 +110,12 @@ include_once '../templates/advocate-header.php';
                                     <a href="advocate-case-view.php?id=<?php echo $case['id']; ?>" class="text-indigo-600 hover:text-indigo-900 mr-3">
                                         <i class="fas fa-eye"></i>
                                     </a>
-                                    <a href="advocate-case-update.php?id=<?php echo $case['id']; ?>" class="text-blue-600 hover:text-blue-900 mr-3">
+                                    <!-- <a href="advocate-case-update.php?id=<?php //echo $case['id']; ?>" class="text-blue-600 hover:text-blue-900 mr-3">
                                         <i class="fas fa-edit"></i>
-                                    </a>
+                                    </a> -->
                                     <a href="advocate-document-upload.php?case_id=<?php echo $case['id']; ?>" class="text-green-600 hover:text-green-900">
-    <i class="fas fa-file-alt"></i>
-</a>
-
+                                        <i class="fas fa-file-alt"></i>
+                                    </a>
                                 </td>
                             </tr>
                         <?php endwhile; ?>
@@ -139,7 +123,7 @@ include_once '../templates/advocate-header.php';
                 </table>
             <?php else: ?>
                 <div class="text-center py-4">
-                    <p class="text-gray-500 text-lg">No cases assigned to you yet.</p>
+                    <p class="text-gray-500 text-lg">No cases found.</p>
                 </div>
             <?php endif; ?>
         </div>

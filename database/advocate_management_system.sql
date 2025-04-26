@@ -212,3 +212,25 @@ CREATE TABLE `tasks` (
 -- Insert default admin user (password: admin123)
 INSERT INTO users (username, password, email, role, first_name, last_name, is_active)
 VALUES ('admin', '$2y$10$8zf0SXYotRXvPUKLPJW3nOFTxKlPJXoJ5atAyPq.VUEzKbIJPOR1G', 'admin@example.com', 'admin', 'System', 'Administrator', TRUE);
+CREATE TABLE `messages` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `sender_id` int(11) NOT NULL,
+  `recipient_id` int(11) NOT NULL,
+  `subject` varchar(255) NOT NULL,
+  `message` text NOT NULL,
+  `attachment` varchar(255) DEFAULT NULL,
+  `attachment_name` varchar(255) DEFAULT NULL,
+  `is_read` tinyint(1) NOT NULL DEFAULT 0,
+  `is_starred` tinyint(1) NOT NULL DEFAULT 0,
+  `is_deleted_by_sender` tinyint(1) NOT NULL DEFAULT 0,
+  `is_deleted_by_recipient` tinyint(1) NOT NULL DEFAULT 0,
+  `parent_id` int(11) DEFAULT NULL,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `sender_id` (`sender_id`),
+  KEY `recipient_id` (`recipient_id`),
+  KEY `parent_id` (`parent_id`),
+  CONSTRAINT `messages_ibfk_1` FOREIGN KEY (`sender_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `messages_ibfk_2` FOREIGN KEY (`recipient_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `messages_ibfk_3` FOREIGN KEY (`parent_id`) REFERENCES `messages` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

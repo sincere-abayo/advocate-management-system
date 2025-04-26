@@ -20,34 +20,46 @@ if($_SESSION['role'] != 'advocate') {
 
 // Include database and required classes
 include_once '../config/database.php';
-include_once '../classes/Advocate.php';
 include_once '../classes/Client.php';
 include_once '../classes/Case.php';
 include_once '../classes/Event.php';
+include_once '../classes/Advocate.php';
 
 // Get database connection
 $database = new Database();
 $db = $database->getConnection();
 
 // Initialize objects
-$advocate_obj = new Advocate($db);
 $client_obj = new Client($db);
 $case_obj = new LegalCase($db);
 $event_obj = new Event($db);
+$advocate_obj = new Advocate($db);
 
-// Get advocate ID
+// Get advocate ID from user ID or create one if it doesn't exist
 $advocate_obj->user_id = $_SESSION['user_id'];
 if(!$advocate_obj->readByUserId()) {
-    header("Location: advocate-dashboard.php");
-    exit();
+    // Create a new advocate profile for this user
+    $advocate_obj->license_number = "DEFAULT-LICENSE";
+    $advocate_obj->specialization = "General Practice";
+    $advocate_obj->experience_years = 0;
+    $advocate_obj->education = "Not specified";
+    $advocate_obj->bio = "";
+    $advocate_obj->hourly_rate = 0;
+    
+    $advocate_id = $advocate_obj->create();
+    if(!$advocate_id) {
+        die("Error: Could not create advocate profile for this user.");
+    }
+    
+    // Read the newly created advocate profile
+    $advocate_obj->readByUserId();
 }
 
 // Get cases for this advocate
-$case_obj->advocate_id = $advocate_obj->id;
-$cases = $case_obj->readByAdvocate();
+$cases = $case_obj->readAll();
 
-// Get clients for this advocate
-$clients = $case_obj->getClientsByAdvocate($advocate_obj->id);
+// Get clients
+$clients = $client_obj->read();
 
 // Process form submission
 $add_success = $add_error = '';
@@ -60,7 +72,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST') {
     $event_obj->end_time = !empty($_POST['end_time']) ? $_POST['end_time'] : null;
     $event_obj->location = $_POST['location'];
     $event_obj->event_type = $_POST['event_type'];
-    $event_obj->advocate_id = $advocate_obj->id;
+    $event_obj->advocate_id = $advocate_obj->id; // Use advocate_id from advocates table
     
     // Set optional properties
     $event_obj->case_id = !empty($_POST['case_id']) ? $_POST['case_id'] : null;
@@ -167,7 +179,7 @@ include_once '../templates/advocate-header.php';
                             <?php 
                             if($clients && $clients->rowCount() > 0) {
                                 while($client = $clients->fetch(PDO::FETCH_ASSOC)) {
-                                    echo '<option value="' . $client['client_id'] . '">' . htmlspecialchars($client['first_name'] . ' ' . $client['last_name']) . '</option>';
+                                    echo '<option value="' . $client['id'] . '">' . htmlspecialchars($client['first_name'] . ' ' . $client['last_name']) . '</option>';
                                 }
                             }
                             ?>

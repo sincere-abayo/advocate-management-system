@@ -22,7 +22,6 @@ if(!isset($_GET['id']) || empty($_GET['id'])) {
 
 // Include database and required classes
 include_once '../config/database.php';
-include_once '../classes/Advocate.php';
 include_once '../classes/Event.php';
 
 // Get database connection
@@ -30,27 +29,13 @@ $database = new Database();
 $db = $database->getConnection();
 
 // Initialize objects
-$advocate_obj = new Advocate($db);
 $event_obj = new Event($db);
-
-// Get advocate ID
-$advocate_obj->user_id = $_SESSION['user_id'];
-if(!$advocate_obj->readByUserId()) {
-    header("Location: advocate-dashboard.php");
-    exit();
-}
 
 // Set event ID
 $event_obj->id = $_GET['id'];
 
 // Read event details
 if(!$event_obj->readOne()) {
-    header("Location: advocate-calendar.php");
-    exit();
-}
-
-// Check if the event belongs to the logged-in advocate
-if($event_obj->advocate_id != $advocate_obj->id) {
     header("Location: advocate-calendar.php");
     exit();
 }
@@ -69,8 +54,8 @@ include_once '../templates/advocate-header.php';
             <a href="advocate-event-edit.php?id=<?php echo $event_obj->id; ?>" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium">
                 <i class="fas fa-edit mr-2"></i>Edit
             </a>
-            <a href="advocate-calendar.php" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg text-sm font-medium">
-                <i class="fas fa-arrow-left mr-2"></i>Back to Calendar
+            <a href="advocate-events.php" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg text-sm font-medium">
+                <i class="fas fa-arrow-left mr-2"></i>Back to events
             </a>
         </div>
     </div>
@@ -102,9 +87,10 @@ include_once '../templates/advocate-header.php';
                             default:
                                 echo 'bg-blue-100 text-blue-800';
                         }
-                    ?>">
-                        <?php echo htmlspecialchars($event_obj->event_type); ?>
+                        ?>">
+                        <?php echo $event_obj->event_type !== null ? htmlspecialchars($event_obj->event_type) : ''; ?>
                     </span>
+
                 </div>
             </div>
             

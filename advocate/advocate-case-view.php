@@ -23,7 +23,6 @@ if(!isset($_GET['id']) || empty($_GET['id'])) {
 // Include database and required classes
 include_once '../config/database.php';
 include_once '../classes/Case.php';
-include_once '../classes/Advocate.php';
 include_once '../classes/Document.php';
 include_once '../classes/Event.php';
 include_once '../classes/Task.php';
@@ -34,29 +33,15 @@ $db = $database->getConnection();
 
 // Initialize objects
 $case_obj = new LegalCase($db);
-$advocate_obj = new Advocate($db);
 $document_obj = new Document($db);  
 $event_obj = new Event($db);
 $task_obj = new Task($db);
-
-// Get advocate ID
-$advocate_obj->user_id = $_SESSION['user_id'];
-if(!$advocate_obj->readByUserId()) {
-    header("Location: advocate-dashboard.php");
-    exit();
-}
 
 // Set case ID
 $case_obj->id = $_GET['id'];
 
 // Read case details
 if(!$case_obj->readOne()) {
-    header("Location: advocate-cases.php");
-    exit();
-}
-
-// Check if the case belongs to the logged-in advocate
-if($case_obj->advocate_id != $advocate_obj->id) {
     header("Location: advocate-cases.php");
     exit();
 }
@@ -276,6 +261,7 @@ include_once '../templates/advocate-header.php';
                                 <tr>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"><?php echo htmlspecialchars($event['title']); ?></td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><?php echo date('M d, Y', strtotime($event['event_date'])); ?></td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><?php echo date('M d, Y', strtotime($event['event_date'])); ?></td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><?php echo date('h:i A', strtotime($event['event_time'])); ?></td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><?php echo htmlspecialchars($event['location']); ?></td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -304,9 +290,8 @@ include_once '../templates/advocate-header.php';
         <div class="p-4 border-b border-gray-200 flex justify-between items-center">
             <h2 class="text-lg font-semibold text-gray-800">Case Tasks</h2>
             <a href="advocate-task-add.php?case_id=<?php echo $case_obj->id; ?>" class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg text-sm font-medium">
-    <i class="fas fa-tasks mr-2"></i>Add Task
-</a>
-
+                <i class="fas fa-tasks mr-2"></i>Add Task
+            </a>
         </div>
         <div class="p-4">
             <?php if($case_tasks && $case_tasks->rowCount() > 0): ?>

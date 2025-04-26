@@ -22,7 +22,6 @@ if(!isset($_GET['case_id']) || empty($_GET['case_id'])) {
 
 // Include database and required classes
 include_once '../config/database.php';
-include_once '../classes/Advocate.php';
 include_once '../classes/Case.php';
 include_once '../classes/Document.php';
 
@@ -31,28 +30,14 @@ $database = new Database();
 $db = $database->getConnection();
 
 // Initialize objects
-$advocate_obj = new Advocate($db);
 $case_obj = new LegalCase($db);
 $document_obj = new Document($db);
-
-// Get advocate ID
-$advocate_obj->user_id = $_SESSION['user_id'];
-if(!$advocate_obj->readByUserId()) {
-    header("Location: advocate-dashboard.php");
-    exit();
-}
 
 // Set case ID
 $case_obj->id = $_GET['case_id'];
 
 // Read case details
 if(!$case_obj->readOne()) {
-    header("Location: advocate-cases.php");
-    exit();
-}
-
-// Check if the case belongs to the logged-in advocate
-if($case_obj->advocate_id != $advocate_obj->id) {
     header("Location: advocate-cases.php");
     exit();
 }
