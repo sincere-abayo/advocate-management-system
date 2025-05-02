@@ -1,769 +1,529 @@
 <?php
-// Start session
-session_start();
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+// Include required files
+require_once 'config/database.php';
+require_once 'includes/functions.php';
+require_once 'includes/auth.php';
 
-// If user is already logged in, redirect to appropriate dashboard
-if(isset($_SESSION['user_id'])) {
-    if($_SESSION['role'] == 'advocate') {
-        header("Location: advocate/advocate-dashboard.php");
-    } else if($_SESSION['role'] == 'client') {
-        header("Location: client/client-dashboard.php");
-    } else {
-        header("Location: index.php");
-    }
-    exit();
+
+// Check if user is logged in
+$isLoggedIn = isLoggedIn();
+
+// Get testimonials
+
+
+// Get features
+function getFeatures() {
+    return [
+        [
+            'title' => 'Case Management',
+            'description' => 'Track all your legal cases in one place with detailed status updates, document storage, and activity logs.',
+            'icon' => 'fa-balance-scale'
+        ],
+        [
+            'title' => 'Client Portal',
+            'description' => 'Clients can view case progress, upload documents, schedule appointments, and communicate securely with their advocates.',
+            'icon' => 'fa-user-shield'
+        ],
+        [
+            'title' => 'Document Management',
+            'description' => 'Securely store, share, and manage all case-related documents with version control and access permissions.',
+            'icon' => 'fa-file-contract'
+        ],
+        [
+            'title' => 'Appointment Scheduling',
+            'description' => 'Integrated calendar system for scheduling consultations, hearings, and meetings with automatic reminders.',
+            'icon' => 'fa-calendar-alt'
+        ],
+        [
+            'title' => 'Billing & Invoicing',
+            'description' => 'Generate professional invoices, track payments, and manage billing records for all client engagements.',
+            'icon' => 'fa-file-invoice-dollar'
+        ],
+        [
+            'title' => 'Secure Communication',
+            'description' => 'End-to-end encrypted messaging system for confidential communications between advocates and clients.',
+            'icon' => 'fa-comments'
+        ]
+    ];
 }
+
+// Include header
+include 'includes/header.php';
 ?>
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LegalEase - Client Portal for Legal Case Management</title>
-    
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
-    <!-- AOS Animation Library -->
-    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
-    
-    <style>
-        body {
-            font-family: 'Poppins', sans-serif;
-            scroll-behavior: smooth;
-        }
-        
-        .gradient-bg {
-            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
-        }
-        
-        .hero-pattern {
-            background-color: #f9fafb;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%234f46e5' fill-opacity='0.05'%3E%3Cpath opacity='.5' d='M96 95h4v1h-4v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9zm-1 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9z'/%3E%3Cpath d='M6 5V0H5v5H0v1h5v94h1V6h94V5H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-        }
-        
-        .feature-card {
-            transition: all 0.3s ease;
-        }
-        
-        .feature-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-        }
-        
-        .testimonial-card {
-            transition: all 0.3s ease;
-        }
-        
-        .testimonial-card:hover {
-            transform: scale(1.03);
-        }
-        
-        .step-card {
-            transition: all 0.3s ease;
-        }
-        
-        .step-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-        }
-        
-        .cta-gradient {
-            background: linear-gradient(135deg, #4338ca 0%, #6d28d9 100%);
-        }
-    </style>
-</head>
-<body>
-    <!-- Navigation -->
-    <nav class="bg-white shadow-md fixed w-full z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16">
-                <div class="flex">
-                    <div class="flex-shrink-0 flex items-center">
-                        <a href="index.php" class="flex items-center">
-                            <i class="fas fa-balance-scale text-indigo-600 text-2xl mr-2"></i>
-                            <span class="text-xl font-bold text-gray-800">LegalEase</span>
-                        </a>
-                    </div>
-                    <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
-                        <a href="#benefits" class="border-transparent text-gray-600 hover:text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
-                            Benefits
-                        </a>
-                        <a href="#features" class="border-transparent text-gray-600 hover:text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
-                            Features
-                        </a>
-                        <a href="#how-it-works" class="border-transparent text-gray-600 hover:text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
-                            How It Works
-                        </a>
-                        <a href="#testimonials" class="border-transparent text-gray-600 hover:text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
-                            Testimonials
-                        </a>
-                        <a href="#faq" class="border-transparent text-gray-600 hover:text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
-                            FAQ
-                        </a>
-                    </div>
-                </div>
-                <div class="hidden sm:ml-6 sm:flex sm:items-center sm:space-x-4">
-                    <a href="login.php" class="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
-                        Sign In
-                    </a>
-                    <a href="register.php?type=client" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md text-sm font-medium">
-                        Client Registration
-                    </a>
-                </div>
-                <div class="-mr-2 flex items-center sm:hidden">
-                    <button type="button" class="mobile-menu-button inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
-                        <span class="sr-only">Open main menu</span>
-                        <i class="fas fa-bars"></i>
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Mobile menu, show/hide based on menu state. -->
-        <div class="mobile-menu hidden sm:hidden">
-            <div class="px-2 pt-2 pb-3 space-y-1">
-                <a href="#benefits" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium">
-                    Benefits
-                </a>
-                <a href="#features" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium">
-                    Features
-                </a>
-                <a href="#how-it-works" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium">
-                    How It Works
-                </a>
-                <a href="#testimonials" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium">
-                    Testimonials
-                </a>
-                <a href="#faq" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium">
-                    FAQ
-                </a>
-            </div>
-            <div class="pt-4 pb-3 border-t border-gray-200">
-                <div class="flex items-center px-4 space-x-3">
-                    <a href="login.php" class="text-gray-600 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium">
-                        Sign In
-                    </a>
-                    <a href="register.php?type=client" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md text-base font-medium">
-                        Client Registration
-                    </a>
-                </div>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Hero Section -->
-    <section class="hero-pattern pt-32 pb-20">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="lg:flex lg:items-center lg:justify-between">
-                <div class="lg:w-1/2" data-aos="fade-right" data-aos-duration="1000">
-                    <h1 class="text-4xl font-extrabold text-gray-900 sm:text-5xl md:text-6xl">
-                        <span class="block">Stay Connected</span>
-                        <span class="block text-indigo-600">With Your Legal Case</span>
-                    </h1>
-                    <p class="mt-3 max-w-md mx-auto text-lg text-gray-500 sm:text-xl md:mt-5 md:max-w-3xl">
-                        A secure client portal that gives you 24/7 access to your case information, documents, and direct communication with your advocate.
-                    </p>
-                    <div class="mt-8 flex flex-col sm:flex-row sm:space-x-4">
-                        <a href="register.php?type=client" class="inline-flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700">
-                            Register as a Client
-                            <i class="fas fa-user-plus ml-2"></i>
-                        </a>
-                        <a href="login.php" class="mt-3 sm:mt-0 inline-flex items-center justify-center px-5 py-3 border border-gray-300 text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
-                            Sign In
-                            <i class="fas fa-sign-in-alt ml-2"></i>
-                        </a>
-                    </div>
-                </div>
-                <div class="mt-10 lg:mt-0 lg:w-1/2" data-aos="fade-left" data-aos-duration="1000">
-                    <img class="rounded-lg shadow-xl" src="assets/img/client-portal.jpg" alt="Client Portal Preview" onerror="this.src='https://via.placeholder.com/600x400?text=Client+Portal+Preview'">
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Benefits Section -->
-    <section id="benefits" class="py-16 bg-white">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-16">
-                <h2 class="text-3xl font-extrabold text-gray-900 sm:text-4xl" data-aos="fade-up">
-                    Benefits for Clients
-                </h2>
-                <p class="mt-4 text-lg text-gray-600" data-aos="fade-up" data-aos-delay="100">
-                    Why our clients love using our platform
-                </p>
-            </div>
-
-            <div class="grid grid-cols-1 gap-8 md:grid-cols-3">
-                <!-- Benefit 1 -->
-                <div class="bg-gray-50 rounded-lg p-8 shadow-sm feature-card" data-aos="fade-up" data-aos-delay="150">
-                    <div class="w-12 h-12 rounded-md bg-indigo-100 text-indigo-600 flex items-center justify-center mb-4">
-                        <i class="fas fa-clock text-xl"></i>
-                    </div>
-                    <h3 class="text-xl font-semibold text-gray-900 mb-2">24/7 Access</h3>
-                    <p class="text-gray-600">
-                        Access your case information anytime, anywhere. No more waiting for office hours or phone calls to get updates on your case.
-                    </p>
-                </div>
-
-                <!-- Benefit 2 -->
-                <div class="bg-gray-50 rounded-lg p-8 shadow-sm feature-card" data-aos="fade-up" data-aos-delay="200">
-                    <div class="w-12 h-12 rounded-md bg-indigo-100 text-indigo-600 flex items-center justify-center mb-4">
-                        <i class="fas fa-shield-alt text-xl"></i>
-                    </div>
-                    <h3 class="text-xl font-semibold text-gray-900 mb-2">Secure Communication</h3>
-                    <p class="text-gray-600">
-                        All communications and document sharing happen in a secure environment, protecting your confidential information.
-                    </p>
-                </div>
-
-                <!-- Benefit 3 -->
-                <div class="bg-gray-50 rounded-lg p-8 shadow-sm feature-card" data-aos="fade-up" data-aos-delay="250">
-                    <div class="w-12 h-12 rounded-md bg-indigo-100 text-indigo-600 flex items-center justify-center mb-4">
-                        <i class="fas fa-file-alt text-xl"></i>
-                    </div>
-                    <h3 class="text-xl font-semibold text-gray-900 mb-2">Document Access</h3>
-                    <p class="text-gray-600">
-                        View and download all your case-related documents in one place. No more searching through emails or paper files.
-                    </p>
-                </div>
-
-                <!-- Benefit 4 -->
-                <div class="bg-gray-50 rounded-lg p-8 shadow-sm feature-card" data-aos="fade-up" data-aos-delay="300">
-                    <div class="w-12 h-12 rounded-md bg-indigo-100 text-indigo-600 flex items-center justify-center mb-4">
-                        <i class="fas fa-calendar-alt text-xl"></i>
-                    </div>
-                    <h3 class="text-xl font-semibold text-gray-900 mb-2">Calendar & Reminders</h3>
-                    <p class="text-gray-600">
-                        Never miss important dates with our integrated calendar. Get reminders for court dates, meetings, and deadlines.
-                    </p>
-                </div>
-
-                <!-- Benefit 5 -->
-                <div class="bg-gray-50 rounded-lg p-8 shadow-sm feature-card" data-aos="fade-up" data-aos-delay="350">
-                    <div class="w-12 h-12 rounded-md bg-indigo-100 text-indigo-600 flex items-center justify-center mb-4">
-                        <i class="fas fa-comments text-xl"></i>
-                    </div>
-                    <h3 class="text-xl font-semibold text-gray-900 mb-2">Direct Messaging</h3>
-                    <p class="text-gray-600">
-                        Communicate directly with your advocate through our secure messaging system. Ask questions and get updates quickly.
-                    </p>
-                </div>
-
-                <!-- Benefit 6 -->
-                <div class="bg-gray-50 rounded-lg p-8 shadow-sm feature-card" data-aos="fade-up" data-aos-delay="400">
-                    <div class="w-12 h-12 rounded-md bg-indigo-100 text-indigo-600 flex items-center justify-center mb-4">
-                        <i class="fas fa-chart-line text-xl"></i>
-                    </div>
-                    <h3 class="text-xl font-semibold text-gray-900 mb-2">Case Progress Tracking</h3>
-                    <p class="text-gray-600">
-                        See real-time updates on your case status and progress. Stay informed about every development in your legal matter.
-                    </p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Features Section -->
-    <section id="features" class="py-16 bg-gray-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-16">
-                <h2 class="text-3xl font-extrabold text-gray-900 sm:text-4xl" data-aos="fade-up">
-                    Client Portal Features
-                </h2>
-                <p class="mt-4 text-lg text-gray-600" data-aos="fade-up" data-aos-delay="100">
-                    Everything you need to stay connected with your legal case
-                </p>
-            </div>
-
-            <div class="mt-16">
-                <!-- Feature 1 -->
-                <div class="lg:flex lg:items-center lg:space-x-8 mb-20" data-aos="fade-up">
-                    <div class="lg:w-1/2 mb-8 lg:mb-0">
-                        <img src="assets/img/case-dashboard.jpg" alt="Case Dashboard" class="rounded-lg shadow-lg" onerror="this.src='https://via.placeholder.com/600x400?text=Case+Dashboard'">
-                    </div>
-                    <div class="lg:w-1/2">
-                        <h3 class="text-2xl font-bold text-gray-900 mb-4">Case Dashboard</h3>
-                        <p class="text-lg text-gray-600 mb-6">
-                            Your personalized dashboard gives you a complete overview of your case status, upcoming events, recent activities, and important documents.
-                        </p>
-                        <ul class="space-y-4">
-                            <li class="flex items-start">
-                                <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
-                                <span class="text-gray-600">Real-time case status updates</span>
-                            </li>
-                            <li class="flex items-start">
-                                <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
-                                <span class="text-gray-600">Timeline of case activities and milestones</span>
-                            </li>
-                            <li class="flex items-start">
-                                <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
-                                <span class="text-gray-600">Quick access to important case information</span>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-
-                <!-- Feature 2 -->
-                <div class="lg:flex lg:items-center lg:space-x-8 mb-20 flex-row-reverse" data-aos="fade-up">
-                    <div class="lg:w-1/2 mb-8 lg:mb-0">
-                        <img src="assets/img/document-access.jpg" alt="Document Access" class="rounded-lg shadow-lg" onerror="this.src='https://via.placeholder.com/600x400?text=Document+Access'">
-                    </div>
-                    <div class="lg:w-1/2">
-                        <h3 class="text-2xl font-bold text-gray-900 mb-4">Secure Document Access</h3>
-                        <p class="text-lg text-gray-600 mb-6">
-                            Access all your case-related documents in one secure location. View, download, and upload documents as needed.
-                        </p>
-                        <ul class="space-y-4">
-                            <li class="flex items-start">
-                                <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
-                                <span class="text-gray-600">Organized document categories for easy navigation</span>
-                            </li>
-                            <li class="flex items-start">
-                                <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
-                                <span class="text-gray-600">Secure document sharing with your advocate</span>
-                            </li>
-                            <li class="flex items-start">
-                                <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
-                                <span class="text-gray-600">Document version history and tracking</span>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-
-                <!-- Feature 3 -->
-                <div class="lg:flex lg:items-center lg:space-x-8 mb-20" data-aos="fade-up">
-                    <div class="lg:w-1/2 mb-8 lg:mb-0">
-                        <img src="assets/img/messaging.jpg" alt="Secure Messaging" class="rounded-lg shadow-lg" onerror="this.src='https://via.placeholder.com/600x400?text=Secure+Messaging'">
-                    </div>
-                    <div class="lg:w-1/2">
-                        <h3 class="text-2xl font-bold text-gray-900 mb-4">Secure Messaging</h3>
-                        <p class="text-lg text-gray-600 mb-6">
-                            Communicate directly with your advocate through our encrypted messaging system. All conversations are organized by case and topic.
-                        </p>
-                        <ul class="space-y-4">
-                            <li class="flex items-start">
-                                <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
-                                <span class="text-gray-600">End-to-end encrypted communications</span>
-                            </li>
-                            <li class="flex items-start">
-                                <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
-                                <span class="text-gray-600">File attachment capabilities</span>
-                            </li>
-                            <li class="flex items-start">
-                                <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
-                                <span class="text-gray-600">Message notifications and read receipts</span>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-
-                <!-- Feature 4 -->
-                <div class="lg:flex lg:items-center lg:space-x-8 flex-row-reverse" data-aos="fade-up">
-                    <div class="lg:w-1/2 mb-8 lg:mb-0">
-                        <img src="assets/img/calendar.jpg" alt="Calendar & Events" class="rounded-lg shadow-lg" onerror="this.src='https://via.placeholder.com/600x400?text=Calendar+Events'">
-                    </div>
-                    <div class="lg:w-1/2">
-                        <h3 class="text-2xl font-bold text-gray-900 mb-4">Calendar & Events</h3>
-                        <p class="text-lg text-gray-600 mb-6">
-                            Keep track of all important dates related to your case. Receive reminders for court appearances, meetings, and document deadlines.
-                        </p>
-                        <ul class="space-y-4">
-                            <li class="flex items-start">
-                                <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
-                                <span class="text-gray-600">Integrated calendar with all case events</span>
-                            </li>
-                            <li class="flex items-start">
-                                <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
-                                <span class="text-gray-600">Email and SMS reminders for important dates</span>
-                            </li>
-                            <li class="flex items-start">
-                                <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
-                                <span class="text-gray-600">Sync with your personal calendar (Google, Outlook)</span>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- How It Works Section -->
-    <section id="how-it-works" class="py-16 bg-white">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-16">
-                <h2 class="text-3xl font-extrabold text-gray-900 sm:text-4xl" data-aos="fade-up">
-                    How It Works for Clients
-                </h2>
-                <p class="mt-4 text-lg text-gray-600" data-aos="fade-up" data-aos-delay="100">
-                    Getting started is simple and takes just a few minutes
-                </p>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <!-- Step 1 -->
-                <div class="bg-white rounded-lg shadow p-6 step-card" data-aos="fade-up" data-aos-delay="150">
-                    <div class="w-12 h-12 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center mb-4 text-xl font-bold">
-                        1
-                    </div>
-                    <h3 class="text-xl font-semibold text-gray-900 mb-2">Register Your Account</h3>
-                    <p class="text-gray-600">
-                        Create your client account with basic information. Your advocate will link your account to your case(s).
-                    </p>
-                    <a href="register.php?type=client" class="mt-4 inline-flex items-center text-indigo-600 hover:text-indigo-800">
-                        Register Now
-                        <i class="fas fa-arrow-right ml-2"></i>
-                    </a>
-                </div>
-
-                <!-- Step 2 -->
-                <div class="bg-white rounded-lg shadow p-6 step-card" data-aos="fade-up" data-aos-delay="200">
-                    <div class="w-12 h-12 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center mb-4 text-xl font-bold">
-                        2
-                    </div>
-                    <h3 class="text-xl font-semibold text-gray-900 mb-2">Access Your Dashboard</h3>
-                    <p class="text-gray-600">
-                        Log in to view your personalized dashboard with all your case information, documents, and communications.
-                    </p>
-                    <a href="login.php" class="mt-4 inline-flex items-center text-indigo-600 hover:text-indigo-800">
-                        Sign In
-                        <i class="fas fa-arrow-right ml-2"></i>
-                    </a>
-                </div>
-
-                <!-- Step 3 -->
-                <div class="bg-white rounded-lg shadow p-6 step-card" data-aos="fade-up" data-aos-delay="250">
-                    <div class="w-12 h-12 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center mb-4 text-xl font-bold">
-                        3
-                    </div>
-                    <h3 class="text-xl font-semibold text-gray-900 mb-2">Stay Connected</h3>
-                    <p class="text-gray-600">
-                        Receive updates, communicate with your advocate, and access documents anytime from any device.
-                    </p>
-                    <a href="#features" class="mt-4 inline-flex items-center text-indigo-600 hover:text-indigo-800">
-                        Learn More
-                        <i class="fas fa-arrow-right ml-2"></i>
-                    </a>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Testimonials Section -->
-    <section id="testimonials" class="py-16 bg-gray-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-16">
-                <h2 class="text-3xl font-extrabold text-gray-900 sm:text-4xl" data-aos="fade-up">
-                    What Our Clients Say
-                </h2>
-                <p class="mt-4 text-lg text-gray-600" data-aos="fade-up" data-aos-delay="100">
-                    Real experiences from clients using our platform
-                </p>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <!-- Testimonial 1 -->
-                <div class="bg-white rounded-lg shadow-lg p-6 testimonial-card" data-aos="fade-up" data-aos-delay="150">
-                    <div class="flex items-center mb-4">
-                        <div class="h-12 w-12 rounded-full overflow-hidden bg-gray-200 flex-shrink-0">
-                            <img src="assets/img/testimonial-1.jpg" alt="Client" class="h-full w-full object-cover" onerror="this.src='https://via.placeholder.com/48?text=J'">
-                        </div>
-                        <div class="ml-4">
-                            <h4 class="text-lg font-semibold text-gray-900">James Wilson</h4>
-                            <p class="text-sm text-gray-600">Family Law Client</p>
-                        </div>
-                    </div>
-                    <div class="text-yellow-400 mb-3">
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                    </div>
-                    <p class="text-gray-600 italic">
-                        "During my divorce case, having 24/7 access to documents and updates was invaluable. I could check case progress anytime without calling the office, and the secure messaging feature made communication so much easier."
-                    </p>
-                </div>
-
-                <!-- Testimonial 2 -->
-                <div class="bg-white rounded-lg shadow-lg p-6 testimonial-card" data-aos="fade-up" data-aos-delay="200">
-                    <div class="flex items-center mb-4">
-                        <div class="h-12 w-12 rounded-full overflow-hidden bg-gray-200 flex-shrink-0">
-                            <img src="assets/img/testimonial-2.jpg" alt="Client" class="h-full w-full object-cover" onerror="this.src='https://via.placeholder.com/48?text=S'">
-                        </div>
-                        <div class="ml-4">
-                            <h4 class="text-lg font-semibold text-gray-900">Sarah Johnson</h4>
-                            <p class="text-sm text-gray-600">Personal Injury Client</p>
-                        </div>
-                    </div>
-                    <div class="text-yellow-400 mb-3">
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star-half-alt"></i>
-                    </div>
-                    <p class="text-gray-600 italic">
-                        "After my accident, keeping track of medical records and insurance documents was overwhelming. This portal kept everything organized in one place, and I could easily share new documents with my advocate."
-                    </p>
-                </div>
-
-                <!-- Testimonial 3 -->
-                <div class="bg-white rounded-lg shadow-lg p-6 testimonial-card" data-aos="fade-up" data-aos-delay="250">
-                    <div class="flex items-center mb-4">
-                        <div class="h-12 w-12 rounded-full overflow-hidden bg-gray-200 flex-shrink-0">
-                            <img src="assets/img/testimonial-3.jpg" alt="Client" class="h-full w-full object-cover" onerror="this.src='https://via.placeholder.com/48?text=M'">
-                        </div>
-                        <div class="ml-4">
-                            <h4 class="text-lg font-semibold text-gray-900">Michael Chen</h4>
-                            <p class="text-sm text-gray-600">Business Law Client</p>
-                        </div>
-                    </div>
-                    <div class="text-yellow-400 mb-3">
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                    </div>
-                    <p class="text-gray-600 italic">
-                        "As a business owner, I appreciate efficiency. The calendar feature with reminders for deadlines and meetings has been incredibly helpful, and I love being able to review documents outside of business hours."
-                    </p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- FAQ Section -->
-    <section id="faq" class="py-16 bg-white">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-16">
-                <h2 class="text-3xl font-extrabold text-gray-900 sm:text-4xl" data-aos="fade-up">
-                    Frequently Asked Questions
-                </h2>
-                <p class="mt-4 text-lg text-gray-600" data-aos="fade-up" data-aos-delay="100">
-                    Common questions from our clients
-                </p>
-            </div>
-
-            <div class="max-w-3xl mx-auto divide-y divide-gray-200">
-                <!-- FAQ Item 1 -->
-                <div class="py-6" data-aos="fade-up" data-aos-delay="150">
-                    <details class="group">
-                        <summary class="flex justify-between items-center font-medium cursor-pointer list-none">
-                            <span>How secure is my information in the client portal?</span>
-                            <span class="transition group-open:rotate-180">
-                                <i class="fas fa-chevron-down"></i>
-                            </span>
-                        </summary>
-                        <p class="text-gray-600 mt-3 group-open:animate-fadeIn">
-                            Your information is protected with bank-level security measures. We use encryption for all data, both in transit and at rest. Our platform complies with legal industry security standards, and access is strictly controlled through secure authentication methods.
-                        </p>
-                    </details>
-                </div>
-
-                <!-- FAQ Item 2 -->
-                <div class="py-6" data-aos="fade-up" data-aos-delay="200">
-                    <details class="group">
-                        <summary class="flex justify-between items-center font-medium cursor-pointer list-none">
-                            <span>How do I get access to the client portal?</span>
-                            <span class="transition group-open:rotate-180">
-                                <i class="fas fa-chevron-down"></i>
-                            </span>
-                        </summary>
-                        <p class="text-gray-600 mt-3 group-open:animate-fadeIn">
-                            You can register for an account directly on our website. Once registered, your advocate will link your account to your case(s). You'll receive an email notification when your case information is available in the portal.
-                        </p>
-                    </details>
-                </div>
-
-                <!-- FAQ Item 3 -->
-                <div class="py-6" data-aos="fade-up" data-aos-delay="250">
-                    <details class="group">
-                        <summary class="flex justify-between items-center font-medium cursor-pointer list-none">
-                            <span>Can I upload documents to share with my advocate?</span>
-                            <span class="transition group-open:rotate-180">
-                                <i class="fas fa-chevron-down"></i>
-                            </span>
-                        </summary>
-                        <p class="text-gray-600 mt-3 group-open:animate-fadeIn">
-                            Yes, you can upload documents directly through the portal. Your advocate will be notified when new documents are uploaded. This is a secure way to share sensitive information without using email.
-                        </p>
-                    </details>
-                </div>
-
-                <!-- FAQ Item 4 -->
-                <div class="py-6" data-aos="fade-up" data-aos-delay="300">
-                    <details class="group">
-                        <summary class="flex justify-between items-center font-medium cursor-pointer list-none">
-                            <span>Will I be notified of updates to my case?</span>
-                            <span class="transition group-open:rotate-180">
-                                <i class="fas fa-chevron-down"></i>
-                            </span>
-                        </summary>
-                        <p class="text-gray-600 mt-3 group-open:animate-fadeIn">
-                            Yes, you'll receive email notifications when there are updates to your case, new documents are shared, or when you receive messages from your advocate. You can customize your notification preferences in your account settings.
-                        </p>
-                    </details>
-                </div>
-
-                <!-- FAQ Item 5 -->
-                <div class="py-6" data-aos="fade-up" data-aos-delay="350">
-                    <details class="group">
-                        <summary class="flex justify-between items-center font-medium cursor-pointer list-none">
-                            <span>Can I access the portal from my mobile device?</span>
-                            <span class="transition group-open:rotate-180">
-                                <i class="fas fa-chevron-down"></i>
-                            </span>
-                        </summary>
-                        <p class="text-gray-600 mt-3 group-open:animate-fadeIn">
-                            Yes, our client portal is fully responsive and works on all devices including smartphones and tablets. You can access your case information anytime, anywhere, from any device with an internet connection.
-                        </p>
-                    </details>
-                </div>
-
-                <!-- FAQ Item 6 -->
-                <div class="py-6" data-aos="fade-up" data-aos-delay="400">
-                    <details class="group">
-                        <summary class="flex justify-between items-center font-medium cursor-pointer list-none">
-                            <span>Is there a cost to use the client portal?</span>
-                            <span class="transition group-open:rotate-180">
-                                <i class="fas fa-chevron-down"></i>
-                            </span>
-                        </summary>
-                        <p class="text-gray-600 mt-3 group-open:animate-fadeIn">
-                            No, access to the client portal is provided as a complimentary service to all clients. There are no additional fees for using the portal or its features.
-                        </p>
-                    </details>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- CTA Section -->
-    <section class="py-20 cta-gradient">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h2 class="text-3xl font-extrabold text-white sm:text-4xl" data-aos="fade-up">
-                Ready to Stay Connected with Your Case?
-            </h2>
-            <p class="mt-4 text-xl text-indigo-100" data-aos="fade-up" data-aos-delay="100">
-                Register today to access your case information securely.
-            </p>
-            <div class="mt-8 flex justify-center flex-col sm:flex-row sm:space-x-4 space-y-4 sm:space-y-0" data-aos="fade-up" data-aos-delay="200">
-            <a href="register.php?type=client" class="inline-flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-md text-indigo-700 bg-white hover:bg-indigo-50">
-                    Register as a Client
-                    <i class="fas fa-user-plus ml-2"></i>
-                </a>
-                <a href="login.php" class="inline-flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700">
-                    Sign In
-                    <i class="fas fa-sign-in-alt ml-2"></i>
-                </a>
-            </div>
-        </div>
-    </section>
-
-    <!-- Footer -->
-    <footer class="bg-gray-800 text-white py-12">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
-                <div>
-                    <div class="flex items-center">
-                        <i class="fas fa-balance-scale text-indigo-400 text-2xl mr-2"></i>
-                        <span class="text-xl font-bold">LegalEase</span>
-                    </div>
-                    <p class="mt-4 text-gray-400">
-                        Connecting clients with their legal cases through secure, accessible technology.
-                    </p>
-                    <div class="mt-6 flex space-x-4">
-                        <a href="#" class="text-gray-400 hover:text-white">
-                            <i class="fab fa-facebook-f"></i>
-                        </a>
-                        <a href="#" class="text-gray-400 hover:text-white">
-                            <i class="fab fa-twitter"></i>
-                        </a>
-                        <a href="#" class="text-gray-400 hover:text-white">
-                            <i class="fab fa-linkedin-in"></i>
-                        </a>
-                        <a href="#" class="text-gray-400 hover:text-white">
-                            <i class="fab fa-instagram"></i>
-                        </a>
-                    </div>
-                </div>
+<!-- Hero Section -->
+<section class="bg-gradient-to-r from-blue-800 to-blue-600 text-white py-16">
+    <div class="container mx-auto px-4">
+        <div class="flex flex-col md:flex-row items-center">
+            <div class="md:w-1/2 mb-10 md:mb-0">
+                <h1 class="text-4xl md:text-5xl font-bold mb-4">Streamline Your Legal Practice</h1>
+                <p class="text-xl mb-8">A comprehensive management system connecting advocates and clients for efficient case handling, document management, and communication.</p>
                 
-                <div>
-                    <h3 class="text-lg font-semibold mb-4">Quick Links</h3>
-                    <ul class="space-y-2">
-                        <li><a href="#benefits" class="text-gray-400 hover:text-white">Benefits</a></li>
-                        <li><a href="#features" class="text-gray-400 hover:text-white">Features</a></li>
-                        <li><a href="#how-it-works" class="text-gray-400 hover:text-white">How It Works</a></li>
-                        <li><a href="#testimonials" class="text-gray-400 hover:text-white">Testimonials</a></li>
-                    </ul>
+                <?php if (!$isLoggedIn): ?>
+                <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
+                    <a href="auth/register.php?type=advocate" class="bg-white text-blue-800 hover:bg-blue-100 font-semibold py-3 px-6 rounded-lg shadow-md transition duration-300 text-center">
+                        Register as Advocate
+                    </a>
+                    <a href="auth/register.php?type=client" class="bg-transparent hover:bg-blue-700 text-white border-2 border-white font-semibold py-3 px-6 rounded-lg transition duration-300 text-center">
+                        Register as Client
+                    </a>
                 </div>
-                
-                <div>
-                    <h3 class="text-lg font-semibold mb-4">Support</h3>
-                    <ul class="space-y-2">
-                        <li><a href="#" class="text-gray-400 hover:text-white">Help Center</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white">Client Resources</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white">Contact Us</a></li>
-                        <li><a href="#faq" class="text-gray-400 hover:text-white">FAQ</a></li>
-                    </ul>
+                <?php else: ?>
+                <a href="<?php echo $_SESSION['user_type']; ?>/index.php" class="bg-white text-blue-800 hover:bg-blue-100 font-semibold py-3 px-6 rounded-lg shadow-md transition duration-300 inline-block">
+                    Go to Dashboard
+                </a>
+                <?php endif; ?>
+            </div>
+            
+            <div class="md:w-1/2">
+            <img src="https://images.unsplash.com/photo-1589829545856-d10d557cf95f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80" alt="Advocate Management System" class="rounded-lg shadow-xl">
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="py-16 bg-gray-50">
+    <div class="container mx-auto px-4">
+        <div class="text-center mb-16">
+            <h2 class="text-3xl font-bold text-gray-800 mb-4">Comprehensive Legal Management</h2>
+            <p class="text-xl text-gray-600 max-w-3xl mx-auto">Our platform offers a complete suite of tools designed specifically for legal professionals and their clients.</p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <?php foreach(getFeatures() as $feature): ?>
+            <div class="bg-white rounded-lg shadow-md p-8 transition duration-300 hover:shadow-lg">
+                <div class="text-blue-600 mb-4">
+                    <i class="fas <?php echo $feature['icon']; ?> text-4xl"></i>
                 </div>
+                <h3 class="text-xl font-semibold mb-3"><?php echo $feature['title']; ?></h3>
+                <p class="text-gray-600"><?php echo $feature['description']; ?></p>
+            </div>
+            <?php endforeach; ?>
+        </div>
+    </div>
+</section>
+
+<!-- How It Works Section -->
+<section class="py-16 bg-white">
+    <div class="container mx-auto px-4">
+        <div class="text-center mb-16">
+            <h2 class="text-3xl font-bold text-gray-800 mb-4">How It Works</h2>
+            <p class="text-xl text-gray-600 max-w-3xl mx-auto">Our platform simplifies the legal process for both advocates and clients.</p>
+        </div>
+        
+        <div class="flex flex-col md:flex-row items-center justify-center space-y-12 md:space-y-0 md:space-x-8">
+            <!-- For Advocates -->
+            <div class="md:w-1/2 bg-blue-50 rounded-lg p-8">
+                <h3 class="text-2xl font-bold text-blue-800 mb-6 flex items-center">
+                    <i class="fas fa-gavel mr-3"></i> For Advocates
+                </h3>
+                <ul class="space-y-4">
+                    <li class="flex items-start">
+                        <div class="bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0 mt-1">1</div>
+                        <div class="ml-4">
+                            <h4 class="font-semibold text-lg">Register & Create Profile</h4>
+                            <p class="text-gray-600">Create your professional profile with your specializations and experience.</p>
+                        </div>
+                    </li>
+                    <li class="flex items-start">
+                        <div class="bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0 mt-1">2</div>
+                        <div class="ml-4">
+                            <h4 class="font-semibold text-lg">Manage Cases</h4>
+                            <p class="text-gray-600">Create and track cases, upload documents, and record activities.</p>
+                        </div>
+                    </li>
+                    <li class="flex items-start">
+                        <div class="bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0 mt-1">3</div>
+                        <div class="ml-4">
+                            <h4 class="font-semibold text-lg">Communicate & Schedule</h4>
+                            <p class="text-gray-600">Securely message clients and schedule appointments through the integrated calendar.</p>
+                        </div>
+                    </li>
+                    <li class="flex items-start">
+                        <div class="bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0 mt-1">4</div>
+                        <div class="ml-4">
+                            <h4 class="font-semibold text-lg">Generate Invoices</h4>
+                            <p class="text-gray-600">Create professional invoices and track payments from clients.</p>
+                        </div>
+                    </li>
+                </ul>
                 
-                <div>
-                    <h3 class="text-lg font-semibold mb-4">Legal</h3>
-                    <ul class="space-y-2">
-                        <li><a href="#" class="text-gray-400 hover:text-white">Privacy Policy</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white">Terms of Service</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white">Cookie Policy</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white">Data Protection</a></li>
+                <?php if (!$isLoggedIn): ?>
+                <div class="mt-8 text-center">
+                    <a href="auth/register.php?type=advocate" class="bg-blue-600 text-white hover:bg-blue-700 font-semibold py-2 px-6 rounded-lg transition duration-300">
+                        Register as Advocate
+                    </a>
+                </div>
+                <?php endif; ?>
+            </div>
+            
+            <!-- For Clients -->
+            <div class="md:w-1/2 bg-green-50 rounded-lg p-8">
+                <h3 class="text-2xl font-bold text-green-800 mb-6 flex items-center">
+                    <i class="fas fa-user-tie mr-3"></i> For Clients
+                </h3>
+                <ul class="space-y-4">
+                    <li class="flex items-start">
+                        <div class="bg-green-600 text-white rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0 mt-1">1</div>
+                        <div class="ml-4">
+                            <h4 class="font-semibold text-lg">Create Account</h4>
+                            <p class="text-gray-600">Sign up and complete your profile with relevant information.</p>
+                        </div>
+                    </li>
+                    <li class="flex items-start">
+                        <div class="bg-green-600 text-white rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0 mt-1">2</div>
+                        <div class="ml-4">
+                            <h4 class="font-semibold text-lg">View Case Progress</h4>
+                            <p class="text-gray-600">Monitor your case status, updates, and upcoming events in real-time.</p>
+                        </div>
+                    </li>
+                    <li class="flex items-start">
+                        <div class="bg-green-600 text-white rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0 mt-1">3</div>
+                        <div class="ml-4">
+                            <h4 class="font-semibold text-lg">Share Documents</h4>
+                            <p class="text-gray-600">Securely upload and access case-related documents anytime.</p>
+                        </div>
+                    </li>
+                    <li class="flex items-start">
+                        <div class="bg-green-600 text-white rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0 mt-1">4</div>
+                        <div class="ml-4">
+                            <h4 class="font-semibold text-lg">Communicate & Pay</h4>
+                            <p class="text-gray-600">Message your advocate directly and handle payments through the platform.</p>
+                        </div>
+                    </li>
+                </ul>
+                
+                <?php if (!$isLoggedIn): ?>
+                <div class="mt-8 text-center">
+                    <a href="auth/register.php?type=client" class="bg-green-600 text-white hover:bg-green-700 font-semibold py-2 px-6 rounded-lg transition duration-300">
+                        Register as Client
+                    </a>
+                </div>
+                <?php endif; ?>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Dashboard Preview Section -->
+<section class="py-16 bg-gray-50">
+    <div class="container mx-auto px-4">
+        <div class="text-center mb-16">
+            <h2 class="text-3xl font-bold text-gray-800 mb-4">Powerful Dashboard Interface</h2>
+            <p class="text-xl text-gray-600 max-w-3xl mx-auto">Intuitive dashboards designed specifically for advocates and clients.</p>
+        </div>
+        
+        <div class="flex flex-col md:flex-row space-y-8 md:space-y-0 md:space-x-8">
+            <div class="md:w-1/2">
+                <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                    <div class="bg-blue-800 text-white py-3 px-4">
+                        <h3 class="font-semibold">Advocate Dashboard</h3>
+                    </div>
+                    <img src="https://images.unsplash.com/photo-1542744173-8e7e53415bb0?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80" alt="Advocate Dashboard" class="w-full">
+                    <div class="p-4">
+                        <p class="text-gray-600">Comprehensive view of cases, appointments, client communications, and billing in one place.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="md:w-1/2">
+                <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                    <div class="bg-green-700 text-white py-3 px-4">
+                        <h3 class="font-semibold">Client Dashboard</h3>
+                    </div>
+                    <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80" alt="Advocate Dashboard" class="w-full">
+                    <div class="p-4">
+                        <p class="text-gray-600">Easy access to case status, document repository, advocate communications, and payment history.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- testimonial -->
+
+<?php
+include 'includes/testimonial.php';
+?>
+
+<!-- Pricing Section -->
+<section class="py-16 bg-gray-50 hidden">
+    <div class="container mx-auto px-4">
+        <div class="text-center mb-16">
+            <h2 class="text-3xl font-bold text-gray-800 mb-4">Simple, Transparent Pricing</h2>
+            <p class="text-xl text-gray-600 max-w-3xl mx-auto">Choose the plan that fits your practice needs.</p>
+        </div>
+        
+        <div class="flex flex-col lg:flex-row space-y-8 lg:space-y-0 lg:space-x-8 justify-center">
+            <!-- Basic Plan -->
+            <div class="bg-white rounded-lg shadow-lg overflow-hidden lg:w-1/3">
+                <div class="p-8 border-b">
+                    <h3 class="text-2xl font-bold text-gray-800 mb-2">Basic</h3>
+                    <p class="text-gray-600 mb-6">For solo practitioners</p>
+                    <div class="flex items-end mb-6">
+                        <span class="text-4xl font-bold text-gray-800">$29</span>
+                        <span class="text-gray-600 ml-2">/month</span>
+                    </div>
+                    <a href="auth/register.php?plan=basic" class="block text-center bg-blue-600 text-white hover:bg-blue-700 font-semibold py-2 px-6 rounded-lg transition duration-300">
+                        Get Started
+                    </a>
+                </div>
+                <div class="p-8">
+                    <ul class="space-y-4">
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mt-1 mr-3"></i>
+                            <span>Up to 20 active cases</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mt-1 mr-3"></i>
+                            <span>5GB document storage</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mt-1 mr-3"></i>
+                            <span>Client portal access</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mt-1 mr-3"></i>
+                            <span>Basic reporting</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mt-1 mr-3"></i>
+                            <span>Email support</span>
+                        </li>
                     </ul>
                 </div>
             </div>
             
-            <div class="mt-12 pt-8 border-t border-gray-700 text-center text-gray-400">
-                <p>&copy; <?php echo date('Y'); ?> LegalEase. All rights reserved.</p>
+            <!-- Professional Plan -->
+            <div class="bg-white rounded-lg shadow-lg overflow-hidden lg:w-1/3 relative">
+                <div class="absolute top-0 right-0 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-bl-lg">
+                    MOST POPULAR
+                </div>
+                <div class="p-8 border-b bg-blue-50">
+                    <h3 class="text-2xl font-bold text-gray-800 mb-2">Professional</h3>
+                    <p class="text-gray-600 mb-6">For small law firms</p>
+                    <div class="flex items-end mb-6">
+                        <span class="text-4xl font-bold text-gray-800">$79</span>
+                        <span class="text-gray-600 ml-2">/month</span>
+                    </div>
+                    <a href="auth/register.php?plan=professional" class="block text-center bg-blue-600 text-white hover:bg-blue-700 font-semibold py-2 px-6 rounded-lg transition duration-300">
+                        Get Started
+                    </a>
+                </div>
+                <div class="p-8">
+                    <ul class="space-y-4">
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mt-1 mr-3"></i>
+                            <span>Up to 100 active cases</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mt-1 mr-3"></i>
+                            <span>25GB document storage</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mt-1 mr-3"></i>
+                            <span>Advanced client portal</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mt-1 mr-3"></i>
+                            <span>Comprehensive reporting</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mt-1 mr-3"></i>
+                            <span>Priority email & phone support</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mt-1 mr-3"></i>
+                            <span>Team collaboration tools</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Enterprise Plan -->
+            <div class="bg-white rounded-lg shadow-lg overflow-hidden lg:w-1/3">
+                <div class="p-8 border-b">
+                    <h3 class="text-2xl font-bold text-gray-800 mb-2">Enterprise</h3>
+                    <p class="text-gray-600 mb-6">For large law firms</p>
+                    <div class="flex items-end mb-6">
+                        <span class="text-4xl font-bold text-gray-800">$199</span>
+                        <span class="text-gray-600 ml-2">/month</span>
+                    </div>
+                    <a href="auth/register.php?plan=enterprise" class="block text-center bg-blue-600 text-white hover:bg-blue-700 font-semibold py-2 px-6 rounded-lg transition duration-300">
+                        Get Started
+                    </a>
+                </div>
+                <div class="p-8">
+                    <ul class="space-y-4">
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mt-1 mr-3"></i>
+                            <span>Unlimited active cases</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mt-1 mr-3"></i>
+                            <span>100GB document storage</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mt-1 mr-3"></i>
+                            <span>Premium client portal</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mt-1 mr-3"></i>
+                            <span>Advanced analytics & reporting</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mt-1 mr-3"></i>
+                            <span>24/7 priority support</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mt-1 mr-3"></i>
+                            <span>Advanced team collaboration</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mt-1 mr-3"></i>
+                            <span>Custom integrations</span>
+                        </li>
+                    </ul>
+                </div>
             </div>
         </div>
-    </footer>
+    </div>
+</section>
 
-    <!-- AOS Animation Library -->
-    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-    
-    <!-- Custom JavaScript -->
-    <script>
-        // Initialize AOS animation
-        AOS.init({
-            once: true,
-            duration: 800,
-        });
+<!-- FAQ Section -->
+<?php
+include 'includes/faq.php';
+?>
+<!-- CTA Section -->
+<section class="py-20 bg-gradient-to-r from-blue-800 to-blue-600 text-white">
+    <div class="container mx-auto px-4 text-center">
+        <h2 class="text-3xl md:text-4xl font-bold mb-6">Ready to Transform Your Legal Practice?</h2>
+        <p class="text-xl mb-8 max-w-3xl mx-auto">Join thousands of legal professionals who have streamlined their practice with our comprehensive management system.</p>
         
-        // Mobile menu toggle
-        document.addEventListener('DOMContentLoaded', function() {
-            const mobileMenuButton = document.querySelector('.mobile-menu-button');
-            const mobileMenu = document.querySelector('.mobile-menu');
+        <?php if (!$isLoggedIn): ?>
+        <div class="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
+            <a href="auth/register.php" class="bg-white text-blue-800 hover:bg-blue-100 font-semibold py-3 px-8 rounded-lg shadow-md transition duration-300 text-lg">
+                Start Free Trial
+            </a>
+            <a href="contact.php" class="bg-transparent hover:bg-blue-700 text-white border-2 border-white font-semibold py-3 px-8 rounded-lg transition duration-300 text-lg">
+                Contact Sales
+            </a>
+        </div>
+        <?php else: ?>
+        <a href="<?php echo $_SESSION['user_type']; ?>/index.php" class="bg-white text-blue-800 hover:bg-blue-100 font-semibold py-3 px-8 rounded-lg shadow-md transition duration-300 text-lg inline-block">
+            Go to Dashboard
+        </a>
+        <?php endif; ?>
+    </div>
+</section>
+
+<!-- Stats Section -->
+<section class="py-16 bg-white">
+    <div class="container mx-auto px-4">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+            <div>
+                <div class="text-4xl font-bold text-blue-600 mb-2">5,000+</div>
+                <p class="text-gray-600">Active Users</p>
+            </div>
+            <div>
+                <div class="text-4xl font-bold text-blue-600 mb-2">50,000+</div>
+                <p class="text-gray-600">Cases Managed</p>
+            </div>
+            <div>
+                <div class="text-4xl font-bold text-blue-600 mb-2">99.9%</div>
+                <p class="text-gray-600">Uptime</p>
+            </div>
+            <div>
+                <div class="text-4xl font-bold text-blue-600 mb-2">24/7</div>
+                <p class="text-gray-600">Customer Support</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Partners Section -->
+<section class="py-16 bg-gray-50">
+    <div class="container mx-auto px-4">
+        <div class="text-center mb-12">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Trusted by Leading Law Firms</h2>
+        </div>
+        <div class="flex flex-wrap justify-center items-center gap-8 md:gap-16">
+            <img src="data:image/jpeg;base64,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" alt="Bank of Kigali" class="h-12 grayscale opacity-70 hover:grayscale-0 hover:opacity-100 transition duration-300">
+            <img src="https://www.rssb.rw/_next/image?url=%2Fassets%2Frssb-full-logo.png&w=256&q=75" alt="Rwanda Social Security Board" class="h-12 grayscale opacity-70 hover:grayscale-0 hover:opacity-100 transition duration-300">
+            <img src="https://www.mtn.co.rw/wp-content/uploads/2023/07/mtn-logo-nav-new-scaled-1-2048x1062.webp" alt="MTN Rwanda" class="h-12 grayscale opacity-70 hover:grayscale-0 hover:opacity-100 transition duration-300">
+            <img src="https://www.rwandair.com/dist/phoenix/V1.0/img/logorw.png" alt="RwandAir" class="h-12 grayscale opacity-70 hover:grayscale-0 hover:opacity-100 transition duration-300">
+            <img src="https://www.bralirwa.co.rw/frontend/assets/img/brlogogreen.jpeg" alt="Bralirwa" class="h-12 grayscale opacity-70 hover:grayscale-0 hover:opacity-100 transition duration-300">
+        </div>
+
+
+    </div>
+</section>
+
+<!-- Blog Preview Section -->
+<section class="py-16 bg-white">
+    <div class="container mx-auto px-4">
+        <div class="flex justify-between items-center mb-12">
+            <h2 class="text-3xl font-bold text-gray-800">Latest Resources</h2>
+            <a href="blog.php" class="text-blue-600 hover:text-blue-800 font-semibold">View All Articles <i class="fas fa-arrow-right ml-2"></i></a>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <img src="https://images.unsplash.com/photo-1589391886645-d51941baf7fb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80" alt="Blog Post" class="w-full h-48 object-cover">
+            <div class="p-6">
+                    <div class="text-sm text-blue-600 mb-2">Legal Technology</div>
+                    <h3 class="text-xl font-semibold mb-3">How Technology is Reshaping Legal Practice in 2023</h3>
+                    <p class="text-gray-600 mb-4">Explore how modern legal tech is transforming traditional law practices and improving client service.</p>
+                    <a href="blog/post.php?id=1" class="text-blue-600 hover:text-blue-800 font-medium">Read More <i class="fas fa-arrow-right ml-1"></i></a>
+                </div>
+            </div>
             
-            mobileMenuButton.addEventListener('click', function() {
-                mobileMenu.classList.toggle('hidden');
-            });
+            <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                <img src="https://images.unsplash.com/photo-1521791136064-7986c2920216?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1469&q=80" alt="Blog Post" class="w-full h-48 object-cover">                <div class="p-6">
+                    <div class="text-sm text-blue-600 mb-2">Client Management</div>
+                    <h3 class="text-xl font-semibold mb-3">5 Ways to Improve Client Communication in Legal Cases</h3>
+                    <p class="text-gray-600 mb-4">Learn effective strategies to enhance communication with clients and build stronger relationships.</p>
+                    <a href="blog/post.php?id=2" class="text-blue-600 hover:text-blue-800 font-medium">Read More <i class="fas fa-arrow-right ml-1"></i></a>
+                </div>
+            </div>
             
-            // Close mobile menu when clicking on a link
-            const mobileLinks = document.querySelectorAll('.mobile-menu a');
-            mobileLinks.forEach(link => {
-                link.addEventListener('click', function() {
-                    mobileMenu.classList.add('hidden');
-                });
-            });
-        });
-    </script>
-</body>
-</html>
+            <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <img src="https://images.unsplash.com/photo-1568992687947-868a62a9f521?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1632&q=80" alt="Blog Post" class="w-full h-48 object-cover">
+            <div class="p-6">
+                    <div class="text-sm text-blue-600 mb-2">Practice Management</div>
+                    <h3 class="text-xl font-semibold mb-3">Streamlining Document Management for Legal Professionals</h3>
+                    <p class="text-gray-600 mb-4">Discover best practices for organizing and managing legal documents efficiently.</p>
+                    <a href="blog/post.php?id=3" class="text-blue-600 hover:text-blue-800 font-medium">Read More <i class="fas fa-arrow-right ml-1"></i></a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Newsletter Section -->
+<section class="py-16 bg-gray-50">
+    <div class="container mx-auto px-4">
+        <div class="max-w-3xl mx-auto text-center">
+            <h2 class="text-3xl font-bold text-gray-800 mb-4">Stay Updated</h2>
+            <p class="text-xl text-gray-600 mb-8">Subscribe to our newsletter for the latest updates, tips, and industry insights.</p>
+            
+            <form action="subscribe.php" method="POST" class="flex flex-col sm:flex-row gap-4 justify-center">
+                <input type="email" name="email" placeholder="Your email address" required class="px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 flex-grow max-w-md">
+                <button type="submit" class="bg-blue-600 text-white hover:bg-blue-700 font-semibold py-3 px-6 rounded-lg transition duration-300">
+                    Subscribe
+                </button>
+            </form>
+            
+            <p class="text-sm text-gray-500 mt-4">We respect your privacy. Unsubscribe at any time.</p>
+        </div>
+    </div>
+</section>
+
+<?php
+// Include footer
+include 'includes/footer.php';
+?>

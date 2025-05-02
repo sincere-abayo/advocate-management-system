@@ -1,28 +1,29 @@
 <?php
-// Enable error reporting
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-class Database {
-    private $host = "localhost";
-    private $db_name = "advocate_management_system";
-    private $username = "root";
-    private $password = "";
-    public $conn;
+// Database configuration
+define('DB_HOST', 'localhost');
+define('DB_USER', 'root');
+define('DB_PASS', '');
+define('DB_NAME', 'advocate_management_system');
+
+// Create database connection
+function connectDB() {
+    $conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
     
-    // Get database connection
-    public function getConnection() {
-        $this->conn = null;
-        
-        try {
-            $this->conn = new PDO("mysql:host=" . $this->host . ";dbname=" . $this->db_name, $this->username, $this->password);
-            $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-            $this->conn->exec("set names utf8");
-        } catch(PDOException $exception) {
-            echo "Connection error: " . $exception->getMessage();
-        }
-        
-        return $this->conn;
+    // Check connection
+    if ($conn->connect_error) {
+        die("Connection failed: " . $conn->connect_error);
     }
+    
+    return $conn;
 }
+
+// Get database connection
+function getDBConnection() {
+    static $conn = null;
+    if ($conn === null) {
+        $conn = connectDB();
+    }
+    return $conn;
+}
+
 ?>
