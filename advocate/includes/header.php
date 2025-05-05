@@ -87,7 +87,7 @@ $pageTitle = $pageTitle ?? 'Advocate Dashboard';
                     
                     <div class="flex items-center space-x-4">
                         <!-- Search -->
-                        <div class="relative hidden md:block">
+                        <div class="relative hidden md:hidden">
                             <input type="text" placeholder="Search..." class="w-64 pr-10 pl-4 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                             <button class="absolute right-0 top-0 mt-2 mr-3 text-gray-400">
                                 <i class="fas fa-search"></i>
@@ -107,7 +107,7 @@ $pageTitle = $pageTitle ?? 'Advocate Dashboard';
                                 <div class="px-4 py-2 border-b">
                                     <div class="flex justify-between items-center">
                                         <h3 class="text-sm font-semibold text-gray-700">Notifications</h3>
-                                        <a href="/advocate/notifications.php" class="text-xs text-blue-600 hover:underline">View All</a>
+                                        <a href="<?= $path_url ?>advocate/notifications.php" class="text-xs text-blue-600 hover:underline">View All</a>
                                     </div>
                                 </div>
                                 
@@ -139,14 +139,14 @@ $pageTitle = $pageTitle ?? 'Advocate Dashboard';
                             </button>
                             
                             <div x-show="open" @click.away="open = false" class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-20" style="display: none;">
-                                <a href="/advocate/profile.php" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                <a href="<?= $path_url ?>advocate/profile.php" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                                     <i class="fas fa-user mr-2"></i> My Profile
                                 </a>
-                                <a href="/advocate/settings/index.php" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                <a href="/advocate/settings/index.php" class="hidden block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                                     <i class="fas fa-cog mr-2"></i> Settings
                                 </a>
                                 <div class="border-t my-1"></div>
-                                <a href="/auth/logout.php" class="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100">
+                                <a href="<?= $path_url; ?> includes/logout_handler.php" class="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100">
                                     <i class="fas fa-sign-out-alt mr-2"></i> Logout
                                 </a>
                             </div>

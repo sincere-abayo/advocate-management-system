@@ -258,14 +258,65 @@ CREATE TABLE case_hearings (
     case_id INT NOT NULL,
     hearing_date DATE NOT NULL,
     hearing_time TIME NOT NULL,
-    court VARCHAR(100),
+    hearing_type VARCHAR(100) NOT NULL,
+    court_room VARCHAR(100),
     judge VARCHAR(100),
-    purpose TEXT NOT NULL,
-    notes TEXT,
-    status ENUM('scheduled', 'completed', 'adjourned', 'cancelled') DEFAULT 'scheduled',
+    description TEXT,
+    outcome TEXT,
+    next_steps TEXT,
+    status ENUM('scheduled', 'completed', 'cancelled', 'postponed') DEFAULT 'scheduled',
+    created_by INT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (case_id) REFERENCES cases(case_id) ON DELETE CASCADE
+    FOREIGN KEY (case_id) REFERENCES cases(case_id) ON DELETE CASCADE,
+    FOREIGN KEY (created_by) REFERENCES users(user_id)
+);
+-- Create table for billing items
+CREATE TABLE billing_items (
+    item_id INT AUTO_INCREMENT PRIMARY KEY,
+    billing_id INT NOT NULL,
+    description TEXT NOT NULL,
+    quantity DECIMAL(10, 2) NOT NULL,
+    rate DECIMAL(10, 2) NOT NULL,
+    amount DECIMAL(10, 2) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (billing_id) REFERENCES billings(billing_id) ON DELETE CASCADE
+);
+-- Create table for payments
+CREATE TABLE payments (
+    payment_id INT AUTO_INCREMENT PRIMARY KEY,
+    billing_id INT NOT NULL,
+    amount DECIMAL(10, 2) NOT NULL,
+    payment_date DATE NOT NULL,
+    payment_method VARCHAR(50) NOT NULL,
+    notes TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_by INT NOT NULL,
+    FOREIGN KEY (billing_id) REFERENCES billings(billing_id) ON DELETE CASCADE,
+    FOREIGN KEY (created_by) REFERENCES users(user_id)
+);
+-- Create table for conversations
+CREATE TABLE conversations (
+    conversation_id INT AUTO_INCREMENT PRIMARY KEY,
+    initiator_id INT NOT NULL,
+    recipient_id INT NOT NULL,
+    subject VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (initiator_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (recipient_id) REFERENCES users(user_id) ON DELETE CASCADE
+);
+
+-- Create table for messages
+CREATE TABLE messages (
+    message_id INT AUTO_INCREMENT PRIMARY KEY,
+    conversation_id INT NOT NULL,
+    sender_id INT NOT NULL,
+    content TEXT NOT NULL,
+    is_read BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (conversation_id) REFERENCES conversations(conversation_id) ON DELETE CASCADE,
+    FOREIGN KEY (sender_id) REFERENCES users(user_id) ON DELETE CASCADE
 );
 
 -- Add fields to advocate_profiles for financial tracking

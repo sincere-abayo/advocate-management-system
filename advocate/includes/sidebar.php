@@ -62,7 +62,7 @@
                 <a href="<?php echo $path_url ?>advocate/clients/index.php" class="block px-3 py-2 rounded-lg text-sm text-gray-400 hover:text-white hover:bg-gray-800 transition duration-200">
                     All Clients
                 </a>
-                <a href="<?php echo $path_url ?>advocate/clients/create.php" class="block px-3 py-2 rounded-lg text-sm text-gray-400 hover:text-white hover:bg-gray-800 transition duration-200">
+                <a href="<?php echo $path_url ?>advocate/clients/add.php" class="block px-3 py-2 rounded-lg text-sm text-gray-400 hover:text-white hover:bg-gray-800 transition duration-200">
                     Add Client
                 </a>
             </div>
@@ -92,44 +92,63 @@
             <span class="ml-3 font-medium">Time Tracking</span>
         </a>
         
-        <!-- Finance -->
-        <div x-data="{ open: <?php echo strpos($_SERVER['PHP_SELF'], '/finance/') !== false ? 'true' : 'false'; ?> }">
-            <button @click="open = !open" class="w-full group flex items-center px-3 py-2.5 rounded-lg transition duration-200 <?php echo strpos($_SERVER['PHP_SELF'], '/finance/') !== false ? 'bg-gradient-to-r from-blue-700 to-blue-600 text-white shadow-md' : 'text-gray-300 hover:bg-gray-800'; ?>">
-                <div class="flex items-center justify-center w-8">
-                    <i class="fas fa-dollar-sign"></i>
-                </div>
-                <span class="ml-3 font-medium">Finance</span>
-                <i class="fas fa-chevron-down ml-auto transition-transform duration-200" :class="open ? 'transform rotate-180' : ''"></i>
-            </button>
-            <div x-show="open" class="pl-10 mt-1 space-y-1" style="display: none;">
-                <a href="<?php echo $path_url ?>advocate/finance/invoices/index.php" class="block px-3 py-2 rounded-lg text-sm text-gray-400 hover:text-white hover:bg-gray-800 transition duration-200">
-                    Invoices
-                </a>
-                <a href="<?php echo $path_url ?>advocate/finance/expenses/index.php" class="block px-3 py-2 rounded-lg text-sm text-gray-400 hover:text-white hover:bg-gray-800 transition duration-200">
-                    Expenses
-                </a>
-                <a href="<?php echo $path_url ?>advocate/finance/reports.php" class="block px-3 py-2 rounded-lg text-sm text-gray-400 hover:text-white hover:bg-gray-800 transition duration-200">
-                    Financial Reports
-                </a>
-            </div>
+      <!-- Finance -->
+<div x-data="{ open: <?php echo strpos($_SERVER['PHP_SELF'], '/finance/') !== false ? 'true' : 'false'; ?> }">
+    <button @click="open = !open" class="w-full group flex items-center px-3 py-2.5 rounded-lg transition duration-200 <?php echo strpos($_SERVER['PHP_SELF'], '/finance/') !== false ? 'bg-gradient-to-r from-blue-700 to-blue-600 text-white shadow-md' : 'text-gray-300 hover:bg-gray-800'; ?>">
+        <div class="flex items-center justify-center w-8">
+            <i class="fas fa-dollar-sign"></i>
         </div>
-        
-        <!-- Messages -->
-        <a href="<?php echo $path_url ?>advocate/messages/index.php" class="group flex items-center px-3 py-2.5 rounded-lg transition duration-200 <?php echo strpos($_SERVER['PHP_SELF'], '/messages/') !== false ? 'bg-gradient-to-r from-blue-700 to-blue-600 text-white shadow-md' : 'text-gray-300 hover:bg-gray-800'; ?>">
-            <div class="flex items-center justify-center w-8">
-                <i class="fas fa-envelope"></i>
-            </div>
-            <span class="ml-3 font-medium">Messages</span>
-            <?php 
-            // Display unread message count if any
-            $unreadMessages = 3; // Replace with actual count from database
-            if ($unreadMessages > 0): 
-            ?>
-            <span class="ml-auto bg-red-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full">
-                <?php echo $unreadMessages; ?>
-            </span>
-            <?php endif; ?>
+        <span class="ml-3 font-medium">Finance</span>
+        <i class="fas fa-chevron-down ml-auto transition-transform duration-200" :class="open ? 'transform rotate-180' : ''"></i>
+    </button>
+    <div x-show="open" class="pl-10 mt-1 space-y-1" style="display: none;">
+        <a href="<?php echo $path_url ?>advocate/finance/index.php" class="block px-3 py-2 rounded-lg text-sm text-gray-400 hover:text-white hover:bg-gray-800 transition duration-200">
+            Dashboard
         </a>
+        <a href="<?php echo $path_url ?>advocate/finance/invoices/index.php" class="block px-3 py-2 rounded-lg text-sm text-gray-400 hover:text-white hover:bg-gray-800 transition duration-200">
+            Invoices
+        </a>
+        <a href="<?php echo $path_url ?>advocate/finance/expenses/index.php" class="block px-3 py-2 rounded-lg text-sm text-gray-400 hover:text-white hover:bg-gray-800 transition duration-200">
+            Expenses
+        </a>
+        <a href="<?php echo $path_url ?>advocate/finance/reports.php" class="block px-3 py-2 rounded-lg text-sm text-gray-400 hover:text-white hover:bg-gray-800 transition duration-200">
+            Financial Reports
+        </a>
+    </div>
+</div>
+
+        
+<?php 
+// Display unread message count if any
+$unreadMessages = 0;
+if (isLoggedIn()) {
+    $conn = getDBConnection();
+    $userId = $_SESSION['user_id'];
+    
+    $unreadQuery = "
+        SELECT COUNT(*) as count
+        FROM messages m
+        JOIN conversations c ON m.conversation_id = c.conversation_id
+        WHERE m.is_read = 0 
+        AND m.sender_id != ? 
+        AND (c.initiator_id = ? OR c.recipient_id = ?)
+    ";
+    
+    $stmt = $conn->prepare($unreadQuery);
+    $stmt->bind_param("iii", $userId, $userId, $userId);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $row = $result->fetch_assoc();
+    $unreadMessages = $row['count'];
+}
+
+if ($unreadMessages > 0): 
+?>
+<span class="ml-auto bg-red-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full">
+    <?php echo $unreadMessages; ?>
+</span>
+<?php endif; ?>
+
         
         <!-- Reports -->
         <a href="<?php echo $path_url ?>advocate/reports/index.php" class="group flex items-center px-3 py-2.5 rounded-lg transition duration-200 <?php echo strpos($_SERVER['PHP_SELF'], '/reports/') !== false ? 'bg-gradient-to-r from-blue-700 to-blue-600 text-white shadow-md' : 'text-gray-300 hover:bg-gray-800'; ?>">
@@ -140,7 +159,7 @@
         </a>
         
         <!-- Settings -->
-        <a href="<?php echo $path_url ?>advocate/settings/index.php" class="group flex items-center px-3 py-2.5 rounded-lg transition duration-200 <?php echo strpos($_SERVER['PHP_SELF'], '/settings/') !== false ? 'bg-gradient-to-r from-blue-700 to-blue-600 text-white shadow-md' : 'text-gray-300 hover:bg-gray-800'; ?>">
+        <a href="<?php echo $path_url ?>advocate/settings/index.php" class="hidden group flex items-center px-3 py-2.5 rounded-lg transition duration-200 <?php echo strpos($_SERVER['PHP_SELF'], '/settings/') !== false ? 'bg-gradient-to-r from-blue-700 to-blue-600 text-white shadow-md' : 'text-gray-300 hover:bg-gray-800'; ?>">
             <div class="flex items-center justify-center w-8">
                 <i class="fas fa-cog"></i>
             </div>
@@ -151,13 +170,14 @@
     <!-- Bottom Section -->
     <div class="mt-auto pt-4 px-4">
         <div class="border-t border-gray-700 pt-4">
-            <a href="/auth/logout.php" class="flex items-center px-3 py-2.5 rounded-lg text-red-400 hover:bg-red-900 hover:bg-opacity-30 hover:text-red-300 transition duration-200">
+            <a href="<?= $path_url ?>includes/logout_handler.php" class="flex items-center px-3 py-2.5 rounded-lg text-red-400 hover:bg-red-900 hover:bg-opacity-30 hover:text-red-300 transition duration-200">
                 <div class="flex items-center justify-center w-8">
                     <i class="fas fa-sign-out-alt"></i>
                 </div>
                 <span class="ml-3 font-medium">Logout</span>
             </a>
         </div>
+
         
         <!-- System Status -->
         <div class="mt-4 bg-gray-800 rounded-lg p-3 text-xs text-gray-400">

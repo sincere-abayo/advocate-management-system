@@ -228,7 +228,7 @@ function getPriorityBadgeClass($priority) {
             <button @click="activeTab = 'hearings'" :class="{ 'border-blue-500 text-blue-600': activeTab === 'hearings', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeTab !== 'hearings' }" class="py-4 px-6 border-b-2 font-medium text-sm focus:outline-none">
                 <i class="fas fa-gavel mr-2"></i> Hearings
             </button>
-            <button @click="activeTab = 'team'" :class="{ 'border-blue-500 text-blue-600': activeTab === 'team', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeTab !== 'team' }" class="py-4 px-6 border-b-2 font-medium text-sm focus:outline-none">
+            <button @click="activeTab = 'team'" :class="{ 'border-blue-500 text-blue-600': activeTab === 'team', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeTab !== 'team' }" class="py-4 px-6 border-b-2 font-medium text-sm focus:outline-none hidden">
                 <i class="fas fa-users mr-2"></i> Team
             </button>
         </nav>
@@ -325,7 +325,7 @@ function getPriorityBadgeClass($priority) {
                         <?php endif; ?>
                         
                         <div class="mt-4">
-                            <a href="/advocate/clients/view.php?id=<?php echo $case['client_id']; ?>" class="text-blue-600 hover:underline inline-flex items-center">
+                            <a href="../clients/view.php?id=<?php echo $case['client_id']; ?>" class="text-blue-600 hover:underline inline-flex items-center">
                                 <i class="fas fa-user mr-1"></i> View Client Profile
                             </a>
                         </div>
@@ -443,9 +443,10 @@ function getPriorityBadgeClass($priority) {
         <div x-show="activeTab === 'activities'" style="display: none;">
             <div class="flex justify-between items-center mb-6">
                 <h3 class="text-lg font-semibold text-gray-800">Case Activities</h3>
-                <a href="/advocate/cases/add-activity.php?id=<?php echo $caseId; ?>" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg inline-flex items-center">
-                    <i class="fas fa-plus mr-2"></i> Add Activity
-                </a>
+                <a href="add-activity.php?case_id=<?php echo $caseId; ?>" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg inline-flex items-center">
+    <i class="fas fa-plus mr-2"></i> Add Activity
+</a>
+
             </div>
             
             <?php
@@ -528,7 +529,7 @@ function getPriorityBadgeClass($priority) {
                     <div class="text-gray-400 mb-3"><i class="fas fa-history text-5xl"></i></div>
                     <h3 class="text-lg font-medium text-gray-900 mb-1">No activities recorded</h3>
                     <p class="text-gray-500 mb-6">Start tracking case progress by adding activities</p>
-                    <a href="/advocate/cases/add-activity.php?id=<?php echo $caseId; ?>" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg inline-flex items-center">
+                    <a href="add-activity.php?id=<?php echo $caseId; ?>" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg inline-flex items-center">
                         <i class="fas fa-plus mr-2"></i> Add First Activity
                     </a>
                 </div>
@@ -644,7 +645,7 @@ function getPriorityBadgeClass($priority) {
                     <div class="text-gray-400 mb-3"><i class="fas fa-file-alt text-5xl"></i></div>
                     <h3 class="text-lg font-medium text-gray-900 mb-1">No documents uploaded</h3>
                     <p class="text-gray-500 mb-6">Upload case-related documents for better organization</p>
-                    <a href="/advocate/documents/upload.php?case_id=<?php echo $caseId; ?>" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg inline-flex items-center">
+                    <a href="../documents/upload.php?case_id=<?php echo $caseId; ?>" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg inline-flex items-center">
                         <i class="fas fa-file-upload mr-2"></i> Upload First Document
                     </a>
                 </div>
@@ -655,7 +656,7 @@ function getPriorityBadgeClass($priority) {
         <div x-show="activeTab === 'hearings'" style="display: none;">
             <div class="flex justify-between items-center mb-6">
                 <h3 class="text-lg font-semibold text-gray-800">Case Hearings</h3>
-                <a href="/advocate/cases/add-hearing.php?id=<?php echo $caseId; ?>" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg inline-flex items-center">
+                <a href="add-hearing.php?id=<?php echo $caseId; ?>" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg inline-flex items-center">
                     <i class="fas fa-plus mr-2"></i> Add Hearing
                 </a>
             </div>
@@ -729,7 +730,7 @@ function getPriorityBadgeClass($priority) {
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                         <div class="flex justify-end space-x-2">
-                                            <a href="<?php echo $path_url ?>advocate/cases/view-hearing.php?id=<?php echo $hearing['hearing_id']; ?>" class="text-blue-600 hover:text-blue-900" title="View Hearing">
+                                            <a href="<?php echo $path_url ?>advocate/cases/hearing-details.php?id=<?php echo $hearing['hearing_id']; ?>" class="text-blue-600 hover:text-blue-900" title="View Hearing">
                                                 <i class="fas fa-eye"></i>
                                             </a>
                                             <a href="<?php echo $path_url ?>advocate/cases/edit-hearing.php?id=<?php echo $hearing['hearing_id']; ?>" class="text-indigo-600 hover:text-indigo-900" title="Edit Hearing">

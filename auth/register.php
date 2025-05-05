@@ -393,6 +393,13 @@ include_once '../includes/header-minimal.php';
                     <div class="mt-6 text-center text-sm text-gray-600">
                         Already have an account? <a href="login.php" class="text-blue-600 hover:underline">Sign in here</a>
                     </div>
+                    <!-- Add this right after the "Already have an account? Sign in here" section -->
+<div class="mt-4 text-center">
+    <a href="../index.php" class="inline-flex items-center text-blue-600 hover:text-blue-800 hover:underline">
+        <i class="fas fa-arrow-left mr-2"></i> Back to Home
+    </a>
+</div>
+
                 </div>
             <?php endif; ?>
             

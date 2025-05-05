@@ -79,7 +79,18 @@ include_once '../includes/header-minimal.php';
             <h1 class="text-3xl font-bold text-blue-800">Advocate Management System</h1>
             <p class="text-gray-600">Sign in to your account</p>
         </div>
-        
+        <!-- After the sign in button, before the "Don't have an account" text -->
+<div class="flex justify-between items-center mt-6">
+    <a href="../index.php" class="text-blue-600 hover:text-blue-800 hover:underline flex items-center">
+        <i class="fas fa-arrow-left mr-2"></i> Back to Home
+    </a>
+ 
+</div>
+
+<div class="mt-6 text-center text-sm text-gray-600">
+    Don't have an account? <a href="register.php" class="text-blue-600 hover:underline">Register here</a>
+</div>
+
         <div class="bg-white rounded-lg shadow-lg p-8">
             <?php if (!empty($error)): ?>
                 <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6" role="alert">
