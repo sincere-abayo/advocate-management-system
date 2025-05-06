@@ -180,7 +180,8 @@ CREATE TABLE newsletter_subscribers (
 ALTER TABLE users ADD COLUMN verification_token VARCHAR(64);
 
 -- Insert default admin user
-INSERT INTO users (username, password, email, full_name, user_type) 
+INSERT INTO users (username, password, email, full_name, user_type) VALUES ('admin', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin@example.com', 'System Administrator', 'admin');
+
 ALTER TABLE users MODIFY COLUMN status ENUM('active', 'inactive', 'suspended', 'pending') DEFAULT 'active';
 ALTER TABLE advocate_profiles MODIFY advocate_id INT AUTO_INCREMENT PRIMARY KEY;
 ALTER TABLE users 
@@ -324,4 +325,3 @@ ALTER TABLE advocate_profiles ADD COLUMN total_income_ytd DECIMAL(12, 2) DEFAULT
 ALTER TABLE advocate_profiles ADD COLUMN total_expenses_ytd DECIMAL(12, 2) DEFAULT 0;
 ALTER TABLE advocate_profiles ADD COLUMN profit_ytd DECIMAL(12, 2) DEFAULT 0;
 
-VALUES ('admin', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin@example.com', 'System Administrator', 'admin');

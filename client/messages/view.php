@@ -1,4 +1,8 @@
 <?php
+// error reporting
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
 // Include necessary files
 require_once '../../config/database.php';
 require_once '../../includes/functions.php';
@@ -24,12 +28,12 @@ $conversationId = (int)$_GET['id'];
 // Connect to database
 $conn = getDBConnection();
 
-// Check if conversation exists and user is a participant
+/// Check if conversation exists and user is a participant
 $conversationQuery = "
     SELECT 
         c.*,
         CASE 
-            WHEN c.initiator_id = ? THEN r.user_id
+            WHEN c.initiator_id = ? THEN c.recipient_id
             ELSE c.initiator_id
         END as other_user_id,
         CASE 
@@ -44,7 +48,7 @@ $conversationQuery = "
             WHEN c.initiator_id = ? THEN ru.user_type
             ELSE iu.user_type
         END as other_user_type
-      FROM conversations c
+    FROM conversations c
     JOIN users iu ON c.initiator_id = iu.user_id
     JOIN users ru ON c.recipient_id = ru.user_id
     WHERE c.conversation_id = ? AND (c.initiator_id = ? OR c.recipient_id = ?)
@@ -137,8 +141,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['message']) && !empty(
     }
 }
 
-// Close connection
-$conn->close();
+
 
 // Set page title
 $pageTitle = "Conversation with " . $otherUserName;
@@ -171,9 +174,16 @@ include '../includes/header.php';
                 </div>
             </div>
             <div>
-                <button id="schedule-appointment-btn" class="bg-green-600 hover:bg-green-700 text-white text-sm font-medium py-1.5 px-3 rounded-lg inline-flex items-center">
-                    <i class="fas fa-calendar-plus mr-1"></i> Schedule Appointment
-                </button>
+            <?php 
+    $advocateId = $otherUserType === 'advocate' ? getAdvocateIdFromUserId($otherUserId) : '';
+    echo "<!-- Debug: otherUserType=$otherUserType, otherUserId=$otherUserId, advocateId=$advocateId -->";
+?>
+<a href="../appointments/request.php?advocate_id=<?php echo $advocateId; ?>" class="bg-green-600 hover:bg-green-700 text-white text-sm font-medium py-1.5 px-3 rounded-lg inline-flex items-center">
+    <i class="fas fa-calendar-plus mr-1"></i> Schedule Appointment
+</a>
+
+
+
             </div>
         </div>
         
@@ -246,104 +256,10 @@ include '../includes/header.php';
     </div>
 </div>
 
-<!-- Schedule Appointment Modal -->
-<div id="appointment-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-    <div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
-        <div class="flex justify-between items-center border-b border-gray-200 px-6 py-4">
-            <h3 class="text-lg font-semibold text-gray-800">Schedule Appointment</h3>
-            <button id="close-appointment-modal" class="text-gray-400 hover:text-gray-500">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        
-        <form action="../appointments/create.php" method="POST" class="px-6 py-4">
-            <input type="hidden" name="advocate_id" value="<?php echo $otherUserType === 'advocate' ? getAdvocateIdFromUserId($otherUserId) : ''; ?>">
-            
-            <div class="mb-4">
-                <label for="title" class="block text-sm font-medium text-gray-700 mb-1">Title *</label>
-                <input type="text" id="title" name="title" class="form-input w-full" placeholder="Enter appointment title" required>
-            </div>
-            
-            <div class="mb-4">
-                <label for="description" class="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                <textarea id="description" name="description" rows="3" class="form-textarea w-full" placeholder="Enter appointment details"></textarea>
-            </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div>
-                    <label for="appointment_date" class="block text-sm font-medium text-gray-700 mb-1">Date *</label>
-                    <input type="date" id="appointment_date" name="appointment_date" class="form-input w-full" required min="<?php echo date('Y-m-d'); ?>">
-                </div>
-                
-                <div>
-                    <label for="appointment_time" class="block text-sm font-medium text-gray-700 mb-1">Time *</label>
-                    <input type="time" id="appointment_time" name="appointment_time" class="form-input w-full" required>
-                </div>
-            </div>
-            
-            <div class="mb-4">
-                <label for="location" class="block text-sm font-medium text-gray-700 mb-1">Location</label>
-                <input type="text" id="location" name="location" class="form-input w-full" placeholder="Enter appointment location">
-            </div>
-            
-            <div class="flex justify-end space-x-2">
-                <button type="button" id="cancel-appointment" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-2 px-4 rounded-lg">
-                    Cancel
-                </button>
-                <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg">
-                    Request Appointment
-                </button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Scroll to bottom of messages container
-    const messagesContainer = document.getElementById('messages-container');
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
-    
-    // Appointment modal functionality
-    const scheduleAppointmentBtn = document.getElementById('schedule-appointment-btn');
-    const appointmentModal = document.getElementById('appointment-modal');
-    const closeAppointmentModal = document.getElementById('close-appointment-modal');
-    const cancelAppointment = document.getElementById('cancel-appointment');
-    
-    function openAppointmentModal() {
-        appointmentModal.classList.remove('hidden');
-        document.body.style.overflow = 'hidden'; // Prevent scrolling
-    }
-    
-    function closeAppointmentModalFunc() {
-        appointmentModal.classList.add('hidden');
-        document.body.style.overflow = ''; // Re-enable scrolling
-    }
-    
-    scheduleAppointmentBtn.addEventListener('click', openAppointmentModal);
-    closeAppointmentModal.addEventListener('click', closeAppointmentModalFunc);
-    cancelAppointment.addEventListener('click', closeAppointmentModalFunc);
-    
-    // Close modal when clicking outside
-    appointmentModal.addEventListener('click', function(e) {
-        if (e.target === appointmentModal) {
-            closeAppointmentModalFunc();
-        }
-    });
-    
-    // Auto-resize textarea
-    const messageInput = document.getElementById('message');
-    messageInput.addEventListener('input', function() {
-        this.style.height = 'auto';
-        this.style.height = (this.scrollHeight) + 'px';
-    });
-    
-    // Focus message input on page load
-    messageInput.focus();
-});
-</script>
 
 <?php
+// Close connection
+$conn->close();
 // Include footer
 include '../includes/footer.php';
 ?>

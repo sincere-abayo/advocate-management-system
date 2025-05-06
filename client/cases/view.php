@@ -726,7 +726,7 @@ include '../includes/header.php';
                 <?php endif; ?>
             </div>
         </div>
-    </div>
+    
 </div>
 
 <script>

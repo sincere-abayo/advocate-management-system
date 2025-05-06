@@ -448,6 +448,17 @@ function getAdvocateIdFromUserId($userId) {
     return null;
 }
 
+// Add this near the top of admin/cases/view.php, after the includes and before using the function
+
+// Check if formatDateTime function exists, if not define it
+if (!function_exists('formatDateTime')) {
+    function formatDateTime($dateTime) {
+        if (empty($dateTime)) return 'N/A';
+        
+        $timestamp = strtotime($dateTime);
+        return date('M j, Y g:i A', $timestamp);
+    }
+}
 
 // Update system setting
 function updateSetting($settingName, $settingValue) {
@@ -497,21 +508,7 @@ function formatDateTimeRelative($dateTime) {
  * @param int $userId The user ID
  * @return int|null The advocate ID or null if not found
  */
-function getAdvocateIdFromUserId($userId) {
-    $conn = getDBConnection();
-    
-    $stmt = $conn->prepare("SELECT advocate_id FROM advocate_profiles WHERE user_id = ?");
-    $stmt->bind_param("i", $userId);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    
-    if ($result->num_rows > 0) {
-        $row = $result->fetch_assoc();
-        return $row['advocate_id'];
-    }
-    
-    return null;
-}
+
   return $days . ' ' . ($days == 1 ? 'day' : 'days') . ' ago';
     }
     
