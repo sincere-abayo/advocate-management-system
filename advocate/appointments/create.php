@@ -21,13 +21,38 @@ $formData = [
     'client_id' => '',
     'case_id' => ''
 ];
+// Get database connection
+$conn = getDBConnection();
+// Check if client_id is provided in URL
+$clientId = isset($_GET['client_id']) ? (int)$_GET['client_id'] : 0;
+$clientDetails = null;
+
+// If client_id is provided, verify it exists and advocate has worked with this client
+if ($clientId > 0) {
+    $clientStmt = $conn->prepare("
+        SELECT cp.client_id, u.full_name as client_name
+        FROM client_profiles cp
+        JOIN users u ON cp.user_id = u.user_id
+        LEFT JOIN cases c ON c.client_id = cp.client_id
+        LEFT JOIN case_assignments ca ON c.case_id = ca.case_id
+        WHERE cp.client_id = ? AND (ca.advocate_id = ? OR ca.advocate_id IS NULL)
+        LIMIT 1
+    ");
+    $clientStmt->bind_param("ii", $clientId, $advocateId);
+    $clientStmt->execute();
+    $clientResult = $clientStmt->get_result();
+    
+    if ($clientResult->num_rows > 0) {
+        $clientDetails = $clientResult->fetch_assoc();
+        $formData['client_id'] = $clientId;
+    }
+}
 
 // Check if case_id is provided in URL
 $caseId = isset($_GET['case_id']) ? (int)$_GET['case_id'] : 0;
 $caseDetails = null;
 
-// Get database connection
-$conn = getDBConnection();
+
 
 // If case_id is provided, verify it exists and advocate has access to it
 if ($caseId > 0) {
@@ -49,7 +74,7 @@ if ($caseId > 0) {
         $formData['client_id'] = $caseDetails['client_id'];
     } else {
         // Case not found or advocate doesn't have access
-        redirectWithMessage('/advocate/appointments/index.php', 'Case not found or you do not have access to it', 'error');
+        redirectWithMessage('index.php', 'Case not found or you do not have access to it', 'error');
         exit;
     }
 }
@@ -221,7 +246,7 @@ if ($caseId === null) {
                 createNotification($clientUser['user_id'], $notificationTitle, $notificationMessage, 'appointment', $appointmentId);
             }
             
-            redirectWithMessage('/advocate/appointments/view.php?id=' . $appointmentId, 'Appointment scheduled successfully', 'success');
+            redirectWithMessage('view.php?id=' . $appointmentId, 'Appointment scheduled successfully', 'success');
             exit;
         } else {
             $errors['general'] = 'An error occurred while scheduling the appointment: ' . $conn->error;
@@ -286,7 +311,7 @@ if (isset($_GET['get_client_cases']) && !empty($_GET['client_id'])) {
 <div class="mb-6">
     <div class="flex justify-between items-center">
         <h1 class="text-2xl font-semibold text-gray-800">Schedule Appointment</h1>
-        <a href="<?php echo $path_url; ?>advocate/appointments/index.php" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-2 px-4 rounded-lg inline-flex items-center">
+        <a href="<?php echo $path_url; ?>index.php" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-2 px-4 rounded-lg inline-flex items-center">
             <i class="fas fa-arrow-left mr-2"></i> Back to Appointments
         </a>
     </div>
@@ -341,15 +366,16 @@ if (isset($_GET['get_client_cases']) && !empty($_GET['client_id'])) {
                             <i class="fas fa-user text-gray-400"></i>
                         </div>
                         <select id="client_id" name="client_id" 
-                                class="form-select pl-10 w-full <?php echo isset($errors['client_id']) ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : 'focus:ring-blue-500 focus:border-blue-500'; ?>" 
-                                required <?php echo $caseId ? 'disabled' : ''; ?>>
-                            <option value="">Select Client</option>
-                            <?php foreach ($clients as $client): ?>
-                                <option value="<?php echo $client['client_id']; ?>" <?php echo $formData['client_id'] == $client['client_id'] ? 'selected' : ''; ?>>
-                                    <?php echo htmlspecialchars($client['full_name']); ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
+        class="form-select pl-10 w-full <?php echo isset($errors['client_id']) ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : 'focus:ring-blue-500 focus:border-blue-500'; ?>" 
+        required <?php echo $caseId ? 'disabled' : ''; ?>>
+    <option value="">Select Client</option>
+    <?php foreach ($clients as $client): ?>
+        <option value="<?php echo $client['client_id']; ?>" <?php echo $formData['client_id'] == $client['client_id'] ? 'selected' : ''; ?>>
+            <?php echo htmlspecialchars($client['full_name']); ?>
+        </option>
+    <?php endforeach; ?>
+</select>
+
                         <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                             <i class="fas fa-chevron-down text-gray-400"></i>
                         </div>
@@ -485,7 +511,7 @@ if (isset($_GET['get_client_cases']) && !empty($_GET['client_id'])) {
         
         <!-- Form Actions -->
         <div class="flex justify-end space-x-4 pt-4 border-t border-gray-200">
-            <a href="<?php echo $caseId ? '/advocate/cases/view.php?id=' . $caseId : '/advocate/appointments/index.php'; ?>" 
+            <a href="<?php echo $caseId ? '../cases/view.php?id=' . $caseId : 'index.php'; ?>" 
                class="btn-secondary">
                 <i class="fas fa-times mr-2"></i> Cancel
             </a>
@@ -497,6 +523,8 @@ if (isset($_GET['get_client_cases']) && !empty($_GET['client_id'])) {
 </div>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+
+
     // Client and case selection logic
     const clientSelect = document.getElementById('client_id');
     const caseSelect = document.getElementById('case_id');
@@ -542,7 +570,7 @@ function loadClientCases(clientId) {
     } else {
         // Log each case as we process it
         data.forEach((caseItem, index) => {
-            console.log(`Processing case ${index}:`, caseItem);
+            // console.log(`Processing case ${index}:`, caseItem);
             
             if (!caseItem || !caseItem.case_id) {
                 console.error(`Invalid case item at index ${index}:`, caseItem);
@@ -554,11 +582,11 @@ function loadClientCases(clientId) {
             option.textContent = `${caseItem.case_number} - ${caseItem.title}`;
             caseSelect.appendChild(option);
             
-            console.log(`Added option: ${option.value} - ${option.textContent}`);
+            // console.log(`Added option: ${option.value} - ${option.textContent}`);
         });
         
         // Log the final HTML of the select element
-        console.log('Final select HTML:', caseSelect.innerHTML);
+        // console.log('Final select HTML:', caseSelect.innerHTML);
     }
     
     // If we have a case_id in the form data, try to select it
@@ -572,7 +600,7 @@ function loadClientCases(clientId) {
         
         if (optionExists) {
             caseSelect.value = caseIdToSelect;
-            console.log('Selected case ID:', caseSelect.value);
+            // console.log('Selected case ID:', caseSelect.value);
         }
     }
 })
@@ -695,6 +723,15 @@ if (clientSelect.value) {
         
         return !hasErrors;
     });
+    // Load cases when client changes
+    clientSelect.addEventListener('change', function() {
+    loadClientCases(this.value);
+});
+
+// Load cases for initial client selection
+if (clientSelect.value) {
+    loadClientCases(clientSelect.value);
+}
 });
 </script>
 

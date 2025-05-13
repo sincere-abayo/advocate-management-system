@@ -1,4 +1,7 @@
 <?php
+// error reporting
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 // Set page title
 $pageTitle = "Upcoming Hearings";
 
@@ -306,7 +309,7 @@ $conn->close();
                                 <div class="text-sm text-gray-500"><?php echo htmlspecialchars($hearing['case_type']); ?></div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-gray-900"><?php echo htmlspecialchars($hearing['court']); ?></div>
+                                <div class="text-sm text-gray-900"><?php echo htmlspecialchars($hearing['court_room'] ?? ''); ?></div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm text-gray-900"><?php echo htmlspecialchars($hearing['hearing_type']); ?></div>
@@ -315,10 +318,10 @@ $conn->close();
                                 <div class="text-sm text-gray-900"><?php echo htmlspecialchars($hearing['client_name']); ?></div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                <a href="/advocate/cases/view.php?id=<?php echo $hearing['case_id']; ?>" class="text-blue-600 hover:text-blue-900 mr-3">
+                                <a href="view.php?id=<?php echo $hearing['case_id']; ?>" class="text-blue-600 hover:text-blue-900 mr-3">
                                     <i class="fas fa-eye"></i> View Case
                                 </a>
-                                <a href="/advocate/cases/hearing-details.php?id=<?php echo $hearing['hearing_id']; ?>" class="text-indigo-600 hover:text-indigo-900">
+                                <a href="hearing-details.php?id=<?php echo $hearing['hearing_id']; ?>" class="text-indigo-600 hover:text-indigo-900">
                                     <i class="fas fa-gavel"></i> Hearing Details
                                 </a>
                             </td>

@@ -19,6 +19,9 @@ $stmt = $conn->prepare("
     WHERE u.status = 'active'
     ORDER BY u.full_name
 ");
+// Check if client_id is provided in URL (when coming from client page)
+$preselectedClientId = isset($_GET['client_id']) ? (int)$_GET['client_id'] : (isset($_POST['client_id']) ? (int)$_POST['client_id'] : 0);
+
 $stmt->execute();
 $clientsResult = $stmt->get_result();
 $clients = [];
@@ -166,7 +169,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                        $_SESSION['flash_type'] = "success";
                        
                        // Redirect to case view
-                       header("Location: /advocate/cases/view.php?id=$caseId");
+                       header("Location: view.php?id=$caseId");
                        exit;
                        
                    } catch (Exception $e) {
@@ -208,20 +211,20 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                            <div>
                                <label for="client_id" class="block text-sm font-medium text-gray-700 mb-1">Client *</label>
-                               <select id="client_id" name="client_id" class="form-select w-full <?php echo isset($errors['client_id']) ? 'border-red-500' : ''; ?>" required>
-                                   <option value="">Select Client</option>
-                                   <?php foreach ($clients as $client): ?>
-                                       <option value="<?php echo $client['client_id']; ?>" <?php echo (isset($_POST['client_id']) && $_POST['client_id'] == $client['client_id']) ? 'selected' : ''; ?>>
-                                           <?php echo htmlspecialchars($client['full_name']); ?> (<?php echo htmlspecialchars($client['email']); ?>)
-                                       </option>
-                                   <?php endforeach; ?>
-                               </select>
+                              <select id="client_id" name="client_id" class="form-select w-full <?php echo isset($errors['client_id']) ? 'border-red-500' : ''; ?>" required>
+    <option value="">Select Client</option>
+    <?php foreach ($clients as $client): ?>
+        <option value="<?php echo $client['client_id']; ?>" <?php echo ($preselectedClientId == $client['client_id'] || (isset($_POST['client_id']) && $_POST['client_id'] == $client['client_id'])) ? 'selected' : ''; ?>>
+            <?php echo htmlspecialchars($client['full_name']); ?> (<?php echo htmlspecialchars($client['email']); ?>)
+        </option>
+    <?php endforeach; ?>
+</select>
                                <?php if (isset($errors['client_id'])): ?>
                                    <p class="mt-1 text-sm text-red-500"><?php echo $errors['client_id']; ?></p>
                                <?php endif; ?>
                                
                                <div class="mt-2">
-                                   <a href="/advocate/clients/create.php" class="text-blue-600 hover:underline text-sm inline-flex items-center">
+                                   <a href="../clients/create.php" class="text-blue-600 hover:underline text-sm inline-flex items-center">
                                        <i class="fas fa-plus-circle mr-1"></i> Add New Client
                                    </a>
                                </div>
@@ -358,6 +361,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                    const today = new Date().toISOString().split('T')[0];
                    hearingDateInput.setAttribute('min', today);
                }
+               // If client is preselected, highlight the selection
+if (<?php echo $preselectedClientId; ?> > 0) {
+    const clientSelect = document.getElementById('client_id');
+    if (clientSelect) {
+        // Add a subtle animation or highlight effect
+        clientSelect.classList.add('border-blue-500');
+        clientSelect.classList.add('ring-2');
+        clientSelect.classList.add('ring-blue-200');
+    }
+}
+
            });
            </script>
            

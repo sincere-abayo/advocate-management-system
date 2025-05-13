@@ -131,14 +131,14 @@ function logoutUser() {
     session_destroy();
     
     // Redirect to login page
-    header("Location: /auth/login.php");
+    header("Location: ../auth/login.php");
     exit;
 }
 
 // Require login for protected pages
 function requireLogin() {
     if (!isLoggedIn()) {
-        redirectWithMessage('/auth/login.php', 'Please login to access this page', 'warning');
+        redirectWithMessage('../auth/login.php', 'Please login to access this page', 'warning');
     }
 }
 
@@ -147,7 +147,7 @@ function requireUserType($requiredType) {
     requireLogin();
     
     if ($_SESSION['user_type'] != $requiredType && $_SESSION['user_type'] != 'admin') {
-        redirectWithMessage('/index.php', 'You do not have permission to access this page', 'error');
+        redirectWithMessage('../index.php', 'You do not have permission to access this page', 'error');
     }
 }
 

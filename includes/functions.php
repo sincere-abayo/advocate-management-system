@@ -98,16 +98,26 @@ function getAdvocateData($userId) {
 
 // Get unread notifications count
 function getUnreadNotificationsCount($userId) {
-    $conn = getDBConnection();
+    // Create a new connection directly
+    $conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
+    
+    // Check connection
+    if ($conn->connect_error) {
+        die("Connection failed: " . $conn->connect_error);
+    }
+    
     $stmt = $conn->prepare("SELECT COUNT(*) as count FROM notifications WHERE user_id = ? AND is_read = 0");
     $stmt->bind_param("i", $userId);
     $stmt->execute();
     $result = $stmt->get_result();
     $data = $result->fetch_assoc();
     $stmt->close();
+    
+    // Close the connection
+    $conn->close();
+    
     return $data['count'];
 }
-
 // Check if user has permission
 function hasPermission($requiredType) {
     if (!isset($_SESSION['user_type'])) {
@@ -390,6 +400,65 @@ function getSetting($settingName, $default = null) {
     
     return $default;
 }
+function getClientData($userId) {
+    // Create a new connection directly
+    $conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
+    
+    // Check connection
+    if ($conn->connect_error) {
+        die("Connection failed: " . $conn->connect_error);
+    }
+    
+    $stmt = $conn->prepare("
+        SELECT u.*, cp.* 
+        FROM users u
+        JOIN client_profiles cp ON u.user_id = cp.user_id
+        WHERE u.user_id = ?
+    ");
+    $stmt->bind_param("i", $userId);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $data = $result->fetch_assoc();
+    $stmt->close();
+    
+    // Close the connection
+    $conn->close();
+   
+    return $data;
+}
+/**
+ * Get advocate_id from user_id
+ * 
+ * @param int $userId The user ID
+ * @return int|null The advocate ID or null if not found
+ */
+function getAdvocateIdFromUserId($userId) {
+    $conn = getDBConnection();
+    
+    $stmt = $conn->prepare("SELECT advocate_id FROM advocate_profiles WHERE user_id = ?");
+    $stmt->bind_param("i", $userId);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    
+    if ($result->num_rows > 0) {
+        $row = $result->fetch_assoc();
+        return $row['advocate_id'];
+    }
+    
+    return null;
+}
+
+// Add this near the top of admin/cases/view.php, after the includes and before using the function
+
+// Check if formatDateTime function exists, if not define it
+if (!function_exists('formatDateTime')) {
+    function formatDateTime($dateTime) {
+        if (empty($dateTime)) return 'N/A';
+        
+        $timestamp = strtotime($dateTime);
+        return date('M j, Y g:i A', $timestamp);
+    }
+}
 
 // Update system setting
 function updateSetting($settingName, $settingValue) {
@@ -401,4 +470,61 @@ function updateSetting($settingName, $settingValue) {
     ");
     $stmt->bind_param("sss", $settingName, $settingValue, $settingValue);
     return $stmt->execute();
+}
+// Format date and time as a relative time string (e.g., "2 hours ago", "Yesterday", etc.)
+function formatDateTimeRelative($dateTime) {
+    $timestamp = strtotime($dateTime);
+    $now = time();
+    $diff = $now - $timestamp;
+    
+    // If less than 1 minute
+    if ($diff < 60) {
+        return 'Just now';
+    }
+    
+    // If less than 1 hour
+    if ($diff < 3600) {
+        $minutes = floor($diff / 60);
+        return $minutes . ' ' . ($minutes == 1 ? 'minute' : 'minutes') . ' ago';
+    }
+    
+    // If less than 24 hours
+    if ($diff < 86400) {
+        $hours = floor($diff / 3600);
+        return $hours . ' ' . ($hours == 1 ? 'hour' : 'hours') . ' ago';
+    }
+    
+    // If less than 48 hours
+    if ($diff < 172800) {
+        return 'Yesterday';
+    }
+    
+    // If less than 7 days
+    if ($diff < 604800) {
+        $days = floor($diff / 86400);
+      /**
+ * Get advocate_id from user_id
+ * 
+ * @param int $userId The user ID
+ * @return int|null The advocate ID or null if not found
+ */
+
+  return $days . ' ' . ($days == 1 ? 'day' : 'days') . ' ago';
+    }
+    
+    // If less than 30 days
+    if ($diff < 2592000) {
+        $weeks = floor($diff / 604800);
+        return $weeks . ' ' . ($weeks == 1 ? 'week' : 'weeks') . ' ago';
+    }
+    
+    // If less than 365 days
+    if ($diff < 31536000) {
+        $months = floor($diff / 2592000);
+        return $months . ' ' . ($months == 1 ? 'month' : 'months') . ' ago';
+    }
+    
+    // More than a year
+    $years = floor($diff / 31536000);
+    return $years . ' ' . ($years == 1 ? 'year' : 'years') . ' ago';
 }
