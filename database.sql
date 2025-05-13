@@ -183,7 +183,7 @@ ALTER TABLE users ADD COLUMN verification_token VARCHAR(64);
 INSERT INTO users (username, password, email, full_name, user_type) VALUES ('admin', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin@example.com', 'System Administrator', 'admin');
 
 ALTER TABLE users MODIFY COLUMN status ENUM('active', 'inactive', 'suspended', 'pending') DEFAULT 'active';
-ALTER TABLE advocate_profiles MODIFY advocate_id INT AUTO_INCREMENT PRIMARY KEY;
+ALTER TABLE advocate_profiles MODIFY advocate_id INT AUTO_INCREMENT;
 ALTER TABLE users 
 ADD COLUMN reset_token VARCHAR(64) NULL,
 ADD COLUMN reset_token_expiry DATETIME NULL;
