@@ -144,9 +144,19 @@ if (isLoggedIn()) {
 
 if ($unreadMessages > 0): 
 ?>
-<span class="ml-auto bg-red-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full">
-    <?php echo $unreadMessages; ?>
-</span>
+<!-- Messages -->
+<a href="<?php echo $path_url ?>advocate/messages/index.php" class="group flex items-center px-3 py-2.5 rounded-lg transition duration-200 <?php echo strpos($_SERVER['PHP_SELF'], '/messages/') !== false ? 'bg-gradient-to-r from-blue-700 to-blue-600 text-white shadow-md' : 'text-gray-300 hover:bg-gray-800'; ?>">
+    <div class="flex items-center justify-center w-8">
+        <i class="fas fa-envelope"></i>
+    </div>
+    <span class="ml-3 font-medium">Messages</span>
+    <?php if ($unreadMessages > 0): ?>
+    <span class="ml-auto bg-red-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full">
+        <?php echo $unreadMessages; ?>
+    </span>
+    <?php endif; ?>
+</a>
+
 <?php endif; ?>
 
         
