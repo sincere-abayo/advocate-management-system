@@ -40,7 +40,7 @@
             All Cases
         </a>
        
-        <a href="<?php echo $path_url ?>advocate/cases/active.php" class="block px-3 py-2 rounded-lg text-sm text-gray-400 hover:text-white hover:bg-gray-800 transition duration-200">
+        <a href="<?php echo $path_url ?>advocate/cases/active.php" class="hidden px-3 py-2 rounded-lg text-sm text-gray-400 hover:text-white hover:bg-gray-800 transition duration-200">
             Active Cases
         </a>
         <a href="<?php echo $path_url ?>advocate/cases/hearings.php" class="block px-3 py-2 rounded-lg text-sm text-gray-400 hover:text-white hover:bg-gray-800 transition duration-200">
@@ -85,11 +85,11 @@
         </a>
         
         <!-- Time Tracking -->
-        <a href="<?php echo $path_url ?>advocate/time-tracking/index.php" class="group flex items-center px-3 py-2.5 rounded-lg transition duration-200 <?php echo strpos($_SERVER['PHP_SELF'], '/time-tracking/') !== false ? 'bg-gradient-to-r from-blue-700 to-blue-600 text-white shadow-md' : 'text-gray-300 hover:bg-gray-800'; ?>">
+        <a href="<?php echo $path_url ?>advocate/time-tracking/index.php" class="group hidden items-center px-3 py-2.5 rounded-lg transition duration-200 <?php echo strpos($_SERVER['PHP_SELF'], '/time-tracking/') !== false ? 'bg-gradient-to-r from-blue-700 to-blue-600 text-white shadow-md' : 'text-gray-300 hover:bg-gray-800'; ?>">
             <div class="flex items-center justify-center w-8">
                 <i class="fas fa-clock"></i>
             </div>
-            <span class="ml-3 font-medium">Time Tracking</span>
+            <span class="ml-3 font-medium hidden">Time Tracking</span>
         </a>
         
       <!-- Finance -->
