@@ -111,9 +111,7 @@
         <a href="<?php echo $path_url ?>advocate/finance/expenses/index.php" class="block px-3 py-2 rounded-lg text-sm text-gray-400 hover:text-white hover:bg-gray-800 transition duration-200">
             Expenses
         </a>
-        <a href="<?php echo $path_url ?>advocate/finance/reports.php" class="block px-3 py-2 rounded-lg text-sm text-gray-400 hover:text-white hover:bg-gray-800 transition duration-200">
-            Financial Reports
-        </a>
+       
     </div>
 </div>
 
@@ -198,10 +196,7 @@ if ($unreadMessages > 0):
                     Online
                 </span>
             </div>
-            <div class="flex items-center justify-between">
-                <span>Version</span>
-                <span>1.2.5</span>
-            </div>
+           
         </div>
     </div>
 </div>
