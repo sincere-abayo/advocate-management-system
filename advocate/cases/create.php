@@ -224,7 +224,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                <?php endif; ?>
                                
                                <div class="mt-2">
-                                   <a href="../clients/create.php" class="text-blue-600 hover:underline text-sm inline-flex items-center">
+                                   <a href="../clients/add.php" class="text-blue-600 hover:underline text-sm inline-flex items-center">
                                        <i class="fas fa-plus-circle mr-1"></i> Add New Client
                                    </a>
                                </div>
