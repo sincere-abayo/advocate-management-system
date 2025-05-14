@@ -372,32 +372,32 @@ $conn->close();
         <h2 class="text-lg font-semibold mb-4">Quick Actions</h2>
         
         <div class="grid grid-cols-2 gap-4">
-            <a href="/advocate/cases/create.php" class="flex flex-col items-center justify-center p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition duration-200">
+            <a href="cases/create.php" class="flex flex-col items-center justify-center p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition duration-200">
                 <div class="text-blue-500 mb-2"><i class="fas fa-briefcase text-2xl"></i></div>
                 <span class="text-sm font-medium text-gray-700">New Case</span>
             </a>
             
-            <a href="/advocate/appointments/create.php" class="flex flex-col items-center justify-center p-4 bg-green-50 rounded-lg hover:bg-green-100 transition duration-200">
+            <a href="appointments/create.php" class="flex flex-col items-center justify-center p-4 bg-green-50 rounded-lg hover:bg-green-100 transition duration-200">
                 <div class="text-green-500 mb-2"><i class="fas fa-calendar-plus text-2xl"></i></div>
                 <span class="text-sm font-medium text-gray-700">Schedule Appointment</span>
             </a>
             
-            <a href="/advocate/documents/upload.php" class="flex flex-col items-center justify-center p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition duration-200">
+            <a href="documents/upload.php" class="flex flex-col items-center justify-center p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition duration-200">
                 <div class="text-purple-500 mb-2"><i class="fas fa-file-upload text-2xl"></i></div>
                 <span class="text-sm font-medium text-gray-700">Upload Document</span>
             </a>
             
-            <a href="/advocate/time-tracking/log-activity.php" class="flex flex-col items-center justify-center p-4 bg-orange-50 rounded-lg hover:bg-orange-100 transition duration-200">
+            <a href="time-tracking/log-activity.php" class="hidden flex-col items-center justify-center p-4 bg-orange-50 rounded-lg hover:bg-orange-100 transition duration-200">
                 <div class="text-orange-500 mb-2"><i class="fas fa-clock text-2xl"></i></div>
                 <span class="text-sm font-medium text-gray-700">Log Time</span>
             </a>
             
-            <a href="/advocate/finance/invoices/create.php" class="flex flex-col items-center justify-center p-4 bg-red-50 rounded-lg hover:bg-red-100 transition duration-200">
+            <a href="finance/invoices/create.php" class="flex flex-col items-center justify-center p-4 bg-red-50 rounded-lg hover:bg-red-100 transition duration-200">
                 <div class="text-red-500 mb-2"><i class="fas fa-file-invoice-dollar text-2xl"></i></div>
                 <span class="text-sm font-medium text-gray-700">Create Invoice</span>
             </a>
             
-            <a href="/advocate/clients/index.php" class="flex flex-col items-center justify-center p-4 bg-yellow-50 rounded-lg hover:bg-yellow-100 transition duration-200">
+            <a href="clients/index.php" class="flex flex-col items-center justify-center p-4 bg-yellow-50 rounded-lg hover:bg-yellow-100 transition duration-200">
                 <div class="text-yellow-500 mb-2"><i class="fas fa-users text-2xl"></i></div>
                 <span class="text-sm font-medium text-gray-700">View Clients</span>
             </a>

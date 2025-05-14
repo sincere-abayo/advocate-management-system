@@ -249,7 +249,7 @@ include 'includes/header.php';
                             <i class="fas fa-calendar-alt text-4xl"></i>
                         </div>
                         <p class="text-gray-500">No upcoming appointments scheduled</p>
-                        <a href="appointments/create.php" class="mt-2 inline-block text-blue-600 hover:underline">
+                        <a href="appointments/request.php" class="mt-2 inline-block text-blue-600 hover:underline">
                             <i class="fas fa-plus mr-1"></i> Schedule an appointment
                         </a>
                     </div>

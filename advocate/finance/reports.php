@@ -609,11 +609,13 @@ $conn->close();
     </div>
 </div>
 
-<!-- Chart.js Library -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
-<!-- jsPDF Library for PDF export -->
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<!-- Add this line -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -823,149 +825,173 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
         document.body.appendChild(loadingEl);
         
-        // Allow the loading indicator to render
+        // Allow the loading indicator to render with a longer delay
         setTimeout(function() {
-            const reportContent = document.getElementById('reportContent');
-            const pdf = new jsPDF('p', 'pt', 'a4');
-            
-            // PDF title
-            pdf.setFontSize(18);
-            pdf.text('Financial Report', 40, 40);
-            
-            // Add filter information
-            pdf.setFontSize(12);
-            pdf.text(`Year: ${<?php echo $selectedYear; ?>}`, 40, 70);
-            pdf.text(`Month: ${<?php echo $selectedMonth == 0 ? "'All Months'" : "'" . date('F', mktime(0, 0, 0, $selectedMonth, 1)) . "'"; ?>}`, 40, 90);
-            pdf.text(`Generated on: ${new Date().toLocaleDateString()}`, 40, 110);
-            
-            // Add summary data
-            pdf.setFontSize(14);
-            pdf.text('Financial Summary', 40, 140);
-            pdf.setFontSize(10);
-            pdf.text(`Total Income: $${<?php echo $totalIncome; ?>}`, 40, 160);
-            pdf.text(`Total Expenses: $${<?php echo $totalExpenses; ?>}`, 40, 180);
-            pdf.text(`Net Profit: $${<?php echo $netProfit; ?>}`, 40, 200);
-            pdf.text(`Profit Margin: ${<?php echo number_format($profitMargin, 1); ?>}%`, 40, 220);
-            
-            // Use html2canvas to capture the charts and tables
-            const captureElement = async function(element, pdfX, pdfY, pdfWidth, pdfHeight) {
-                const canvas = await html2canvas(element, {
-                    scale: 2,
-                    useCORS: true,
-                    logging: false
-                });
+            try {
+                const reportContent = document.getElementById('reportContent');
                 
-                const imgData = canvas.toDataURL('image/png');
-                pdf.addImage(imgData, 'PNG', pdfX, pdfY, pdfWidth, pdfHeight);
-            };
-            
-            // Capture each section of the report
-            html2canvas(document.querySelector('.grid.grid-cols-1.md\\:grid-cols-2.lg\\:grid-cols-4'), {
-                scale: 2,
-                useCORS: true,
-                logging: false
-            }).then(canvas => {
-                const imgData = canvas.toDataURL('image/png');
-                pdf.addImage(imgData, 'PNG', 40, 240, 520, 100);
+                if (!jsPDF) {
+                    throw new Error("jsPDF library not loaded properly");
+                }
                 
-                // Add a new page for charts
-                pdf.addPage();
+                const pdf = new jsPDF('p', 'pt', 'a4');
                 
-                // Capture monthly comparison chart
-                return html2canvas(document.getElementById('monthlyComparisonChart').parentNode, {
-                    scale: 2,
-                    useCORS: true,
-                    logging: false
-                });
-            }).then(canvas => {
-                const imgData = canvas.toDataURL('image/png');
-                pdf.addImage(imgData, 'PNG', 40, 40, 520, 250);
+                // PDF title
+                pdf.setFontSize(18);
+                pdf.text('Financial Report', 40, 40);
                 
-                // Capture expense categories chart
-                return html2canvas(document.getElementById('expenseCategoriesChart').parentNode, {
-                    scale: 2,
-                    useCORS: true,
-                    logging: false
-                });
-            }).then(canvas => {
-                const imgData = canvas.toDataURL('image/png');
-                pdf.addImage(imgData, 'PNG', 40, 300, 520, 250);
+                // Add filter information
+                pdf.setFontSize(12);
+                pdf.text(`Year: ${<?php echo $selectedYear; ?>}`, 40, 70);
+                pdf.text(`Month: ${<?php echo $selectedMonth == 0 ? "'All Months'" : "'" . date('F', mktime(0, 0, 0, $selectedMonth, 1)) . "'"; ?>}`, 40, 90);
+                pdf.text(`Generated on: ${new Date().toLocaleDateString()}`, 40, 110);
                 
-                // Add a new page for more charts
-                pdf.addPage();
-                
-                // Capture monthly profit chart
-                return html2canvas(document.getElementById('monthlyProfitChart').parentNode, {
-                    scale: 2,
-                    useCORS: true,
-                    logging: false
-                });
-            }).then(canvas => {
-                const imgData = canvas.toDataURL('image/png');
-                pdf.addImage(imgData, 'PNG', 40, 40, 520, 250);
-                
-                // Capture income breakdown chart
-                return html2canvas(document.getElementById('incomeBreakdownChart').parentNode, {
-                    scale: 2,
-                    useCORS: true,
-                    logging: false
-                });
-            }).then(canvas => {
-                const imgData = canvas.toDataURL('image/png');
-                pdf.addImage(imgData, 'PNG', 40, 300, 520, 250);
-                
-                // Add a new page for tables
-                pdf.addPage();
-                
-                // Add monthly data table title
+                // Add summary data
                 pdf.setFontSize(14);
-                pdf.text('Monthly Financial Data', 40, 40);
+                pdf.text('Financial Summary', 40, 140);
+                pdf.setFontSize(10);
+                pdf.text(`Total Income: ${<?php echo $totalIncome; ?>}`, 40, 160);
+                pdf.text(`Total Expenses: ${<?php echo $totalExpenses; ?>}`, 40, 180);
+                pdf.text(`Net Profit: ${<?php echo $netProfit; ?>}`, 40, 200);
+                pdf.text(`Profit Margin: ${<?php echo number_format($profitMargin, 1); ?>}%`, 40, 220);
                 
-                // Create table data for monthly financials
-                const monthlyData = [];
-                monthlyData.push(['Month', 'Income', 'Expenses', 'Profit', 'Margin']);
-                
-                <?php for ($i = 1; $i <= 12; $i++): ?>
-                monthlyData.push([
-                    '<?php echo date('F', mktime(0, 0, 0, $i, 1)); ?>',
-                    '$<?php echo number_format($monthlyIncome[$i], 2); ?>',
-                    '$<?php echo number_format($monthlyExpenses[$i], 2); ?>',
-                    '$<?php echo number_format($monthlyProfit[$i], 2); ?>',
-                    '<?php echo number_format(($monthlyIncome[$i] > 0 ? ($monthlyProfit[$i] / $monthlyIncome[$i]) * 100 : 0), 1); ?>%'
-                ]);
-                <?php endfor; ?>
-                
-                // Add monthly data table
-                pdf.autoTable({
-                    startY: 60,
-                    head: [monthlyData[0]],
-                    body: monthlyData.slice(1),
-                    theme: 'grid',
-                    styles: {
-                        fontSize: 8
-                    },
-                    headStyles: {
-                        fillColor: [59, 130, 246],
-                        textColor: 255
-                    },
-                    alternateRowStyles: {
-                        fillColor: [240, 240, 240]
+                // Use html2canvas to capture the charts and tables with improved error handling
+                const captureElement = async function(element, pdfX, pdfY, pdfWidth, pdfHeight) {
+                    try {
+                        const canvas = await html2canvas(element, {
+                            scale: 1.5, // Lower scale factor for better performance
+                            useCORS: true,
+                            allowTaint: true,
+                            logging: false
+                        });
+                        
+                        const imgData = canvas.toDataURL('image/png');
+                        pdf.addImage(imgData, 'PNG', pdfX, pdfY, pdfWidth, pdfHeight);
+                        return true;
+                    } catch (error) {
+                        console.error('Error capturing element:', error);
+                        return false;
                     }
+                };
+                
+                // Capture each section of the report with error handling
+                html2canvas(document.querySelector('.grid.grid-cols-1.md\\:grid-cols-2.lg\\:grid-cols-4'), {
+                    scale: 1.5,
+                    useCORS: true,
+                    allowTaint: true,
+                    logging: false
+                }).then(canvas => {
+                    const imgData = canvas.toDataURL('image/png');
+                    pdf.addImage(imgData, 'PNG', 40, 240, 520, 100);
+                    
+                    // Add a new page for charts
+                    pdf.addPage();
+                    
+                    // Capture monthly comparison chart
+                    return html2canvas(document.getElementById('monthlyComparisonChart').parentNode, {
+                        scale: 1.5,
+                        useCORS: true,
+                        allowTaint: true,
+                        logging: false
+                    });
+                }).then(canvas => {
+                    const imgData = canvas.toDataURL('image/png');
+                    pdf.addImage(imgData, 'PNG', 40, 40, 520, 250);
+                    
+                    // Capture expense categories chart
+                    return html2canvas(document.getElementById('expenseCategoriesChart').parentNode, {
+                        scale: 1.5,
+                        useCORS: true,
+                        allowTaint: true,
+                        logging: false
+                    });
+                }).then(canvas => {
+                    const imgData = canvas.toDataURL('image/png');
+                    pdf.addImage(imgData, 'PNG', 40, 300, 520, 250);
+                    
+                    // Add a new page for more charts
+                    pdf.addPage();
+                    
+                    // Capture monthly profit chart
+                    return html2canvas(document.getElementById('monthlyProfitChart').parentNode, {
+                        scale: 1.5,
+                        useCORS: true,
+                        allowTaint: true,
+                        logging: false
+                    });
+                }).then(canvas => {
+                    const imgData = canvas.toDataURL('image/png');
+                    pdf.addImage(imgData, 'PNG', 40, 40, 520, 250);
+                    
+                    // Capture income breakdown chart
+                    return html2canvas(document.getElementById('incomeBreakdownChart').parentNode, {
+                        scale: 1.5,
+                        useCORS: true,
+                        allowTaint: true,
+                        logging: false
+                    });
+                }).then(canvas => {
+                    const imgData = canvas.toDataURL('image/png');
+                    pdf.addImage(imgData, 'PNG', 40, 300, 520, 250);
+                    
+                    // Add a new page for tables
+                    pdf.addPage();
+                    
+                    // Add monthly data table title
+                    pdf.setFontSize(14);
+                    pdf.text('Monthly Financial Data', 40, 40);
+                    
+                    // Create table data for monthly financials
+                    const monthlyData = [];
+                    monthlyData.push(['Month', 'Income', 'Expenses', 'Profit', 'Margin']);
+                    
+                    <?php for ($i = 1; $i <= 12; $i++): ?>
+                    monthlyData.push([
+                        '<?php echo date('F', mktime(0, 0, 0, $i, 1)); ?>',
+                        '$<?php echo number_format($monthlyIncome[$i], 2); ?>',
+                        '$<?php echo number_format($monthlyExpenses[$i], 2); ?>',
+                        '$<?php echo number_format($monthlyProfit[$i], 2); ?>',
+                        '<?php echo number_format(($monthlyIncome[$i] > 0 ? ($monthlyProfit[$i] / $monthlyIncome[$i]) * 100 : 0), 1); ?>%'
+                    ]);
+                    <?php endfor; ?>
+                    
+                    // Add monthly data table
+                    pdf.autoTable({
+                        startY: 60,
+                        head: [monthlyData[0]],
+                        body: monthlyData.slice(1),
+                        theme: 'grid',
+                        styles: {
+                            fontSize: 8
+                        },
+                        headStyles: {
+                            fillColor: [59, 130, 246],
+                            textColor: 255
+                        },
+                        alternateRowStyles: {
+                            fillColor: [240, 240, 240]
+                        }
+                    });
+                    
+                    // Save the PDF
+                    pdf.save('Financial_Report_<?php echo $selectedYear; ?><?php echo $selectedMonth > 0 ? "_" . date("M", mktime(0, 0, 0, $selectedMonth, 1)) : ""; ?>.pdf');
+                    
+                    // Remove loading indicator
+                    document.body.removeChild(loadingEl);
+                }).catch(error => {
+                    console.error('Error generating PDF:', error);
+                    alert('There was an error generating the PDF: ' + error.message + '. Please try again.');
+                    document.body.removeChild(loadingEl);
                 });
-                
-                // Save the PDF
-                pdf.save('Financial_Report_<?php echo $selectedYear; ?><?php echo $selectedMonth > 0 ? "_" . date("M", mktime(0, 0, 0, $selectedMonth, 1)) : ""; ?>.pdf');
-                
-                // Remove loading indicator
+            } catch (error) {
+                console.error('Error initializing PDF generation:', error);
+                alert('There was an error initializing the PDF generation: ' + error.message + '. Please try again.');
                 document.body.removeChild(loadingEl);
-            }).catch(error => {
-                console.error('Error generating PDF:', error);
-                alert('There was an error generating the PDF. Please try again.');
-                document.body.removeChild(loadingEl);
-            });
-        }, 100);
+            }
+        }, 1000); // Increased timeout to 1 second for better chart rendering
     });
 });
+
 </script>
 
 <style>
@@ -988,8 +1014,3 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 }
 </style>
-
-<?php
-// Include footer
-include_once '../includes/footer.php';
-?>

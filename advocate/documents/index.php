@@ -418,7 +418,7 @@ $conn->close();
                 </div>
             <?php else: ?>
                 <div class="mt-4">
-                    <a href="/advocate/documents/upload.php" class="btn-primary">
+                    <a href="upload.php" class="btn-primary">
                         <i class="fas fa-upload mr-2"></i> Upload New Document
                     </a>
                 </div>

@@ -113,7 +113,7 @@ $pageTitle = $pageTitle ?? 'Advocate Dashboard';
                                 
                                 <div class="max-h-64 overflow-y-auto">
                                     <!-- Notification items will be loaded here -->
-                                    <div class="px-4 py-3 hover:bg-gray-50 border-b">
+                                    <!-- <div class="px-4 py-3 hover:bg-gray-50 border-b">
                                         <p class="text-sm font-medium text-gray-800">New case assigned</p>
                                         <p class="text-xs text-gray-500">You have been assigned to a new case: Smith vs. Johnson</p>
                                         <p class="text-xs text-gray-400 mt-1">2 hours ago</p>
@@ -123,7 +123,7 @@ $pageTitle = $pageTitle ?? 'Advocate Dashboard';
                                         <p class="text-sm font-medium text-gray-800">Upcoming appointment</p>
                                         <p class="text-xs text-gray-500">Reminder: Meeting with client tomorrow at 10:00 AM</p>
                                         <p class="text-xs text-gray-400 mt-1">Yesterday</p>
-                                    </div>
+                                    </div> -->
                                 </div>
                             </div>
                         </div>
