@@ -1,4 +1,6 @@
 <?php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 // Set page title
 $pageTitle = "Dashboard";
 
@@ -188,7 +190,7 @@ $conn->close();
             </div>
         </div>
     </div>
-    
+
     <!-- Monthly Income -->
     <div class="bg-white rounded-lg shadow p-6">
         <div class="flex items-center">
@@ -202,14 +204,15 @@ $conn->close();
         </div>
         <div class="mt-4">
             <div class="flex justify-between text-sm">
-                <span class="text-gray-500">Expenses: <?php echo formatCurrency($financialSummary['month_expenses']); ?></span>
+                <span class="text-gray-500">Expenses:
+                    <?php echo formatCurrency($financialSummary['month_expenses']); ?></span>
                 <span class="<?php echo $financialSummary['month_profit'] >= 0 ? 'text-green-500' : 'text-red-500'; ?>">
                     Profit: <?php echo formatCurrency($financialSummary['month_profit']); ?>
                 </span>
             </div>
         </div>
     </div>
-    
+
     <!-- YTD Income -->
     <div class="bg-white rounded-lg shadow p-6">
         <div class="flex items-center">
@@ -223,14 +226,15 @@ $conn->close();
         </div>
         <div class="mt-4">
             <div class="flex justify-between text-sm">
-                <span class="text-gray-500">Expenses: <?php echo formatCurrency($financialSummary['ytd_expenses']); ?></span>
+                <span class="text-gray-500">Expenses:
+                    <?php echo formatCurrency($financialSummary['ytd_expenses']); ?></span>
                 <span class="<?php echo $financialSummary['ytd_profit'] >= 0 ? 'text-green-500' : 'text-red-500'; ?>">
                     Profit: <?php echo formatCurrency($financialSummary['ytd_profit']); ?>
                 </span>
             </div>
         </div>
     </div>
-    
+
     <!-- Upcoming Appointments -->
     <div class="bg-white rounded-lg shadow p-6">
         <div class="flex items-center">
@@ -244,9 +248,11 @@ $conn->close();
         </div>
         <div class="mt-4">
             <?php if (!empty($upcomingAppointments)): ?>
-                <p class="text-sm text-gray-600">Next: <?php echo formatDate($upcomingAppointments[0]['appointment_date']); ?> at <?php echo formatTime($upcomingAppointments[0]['start_time']); ?></p>
+            <p class="text-sm text-gray-600">Next:
+                <?php echo formatDate($upcomingAppointments[0]['appointment_date']); ?> at
+                <?php echo formatTime($upcomingAppointments[0]['start_time']); ?></p>
             <?php else: ?>
-                <p class="text-sm text-gray-600">No upcoming appointments</p>
+            <p class="text-sm text-gray-600">No upcoming appointments</p>
             <?php endif; ?>
         </div>
     </div>
@@ -260,16 +266,16 @@ $conn->close();
             <canvas id="caseStatusChart"></canvas>
         </div>
     </div>
-    
+
     <!-- Monthly Income Chart -->
     <div class="bg-white rounded-lg shadow p-6 lg:col-span-2">
         <div class="h-64">
-        <h2 class="text-lg font-semibold mb-4">Monthly Financial Overview</h2>
-        <div class="h-64">
-            <canvas id="financialChart"></canvas>
+            <h2 class="text-lg font-semibold mb-4">Monthly Financial Overview</h2>
+            <div class="h-64">
+                <canvas id="financialChart"></canvas>
+            </div>
         </div>
     </div>
-</div>
 </div>
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
     <!-- Upcoming Appointments -->
@@ -278,55 +284,55 @@ $conn->close();
             <h2 class="text-lg font-semibold">Upcoming Appointments</h2>
             <a href="/advocate/appointments/index.php" class="text-sm text-blue-600 hover:underline">View All</a>
         </div>
-        
+
         <?php if (empty($upcomingAppointments)): ?>
-            <div class="text-center py-6">
-                <div class="text-gray-400 mb-2"><i class="fas fa-calendar-times text-3xl"></i></div>
-                <p class="text-gray-500">No upcoming appointments</p>
-            </div>
+        <div class="text-center py-6">
+            <div class="text-gray-400 mb-2"><i class="fas fa-calendar-times text-3xl"></i></div>
+            <p class="text-gray-500">No upcoming appointments</p>
+        </div>
         <?php else: ?>
-            <div class="space-y-4">
-                <?php foreach ($upcomingAppointments as $appointment): ?>
-                    <div class="border-l-4 border-blue-500 pl-4 py-2">
-                        <div class="flex justify-between">
-                            <p class="font-medium"><?php echo htmlspecialchars($appointment['title']); ?></p>
-                            <span class="text-sm text-gray-500"><?php echo formatTime($appointment['start_time']); ?></span>
-                        </div>
-                        <p class="text-sm text-gray-600">
-                            <?php echo formatDate($appointment['appointment_date']); ?>
-                        </p>
-                        <p class="text-sm text-gray-600">
-                            Client: <?php echo htmlspecialchars($appointment['client_name']); ?>
-                        </p>
-                        <?php if (!empty($appointment['case_title'])): ?>
-                            <p class="text-xs text-gray-500 mt-1">
-                                Case: <?php echo htmlspecialchars($appointment['case_title']); ?>
-                            </p>
-                        <?php endif; ?>
-                    </div>
-                <?php endforeach; ?>
+        <div class="space-y-4">
+            <?php foreach ($upcomingAppointments as $appointment): ?>
+            <div class="border-l-4 border-blue-500 pl-4 py-2">
+                <div class="flex justify-between">
+                    <p class="font-medium"><?php echo htmlspecialchars($appointment['title']); ?></p>
+                    <span class="text-sm text-gray-500"><?php echo formatTime($appointment['start_time']); ?></span>
+                </div>
+                <p class="text-sm text-gray-600">
+                    <?php echo formatDate($appointment['appointment_date']); ?>
+                </p>
+                <p class="text-sm text-gray-600">
+                    Client: <?php echo htmlspecialchars($appointment['client_name']); ?>
+                </p>
+                <?php if (!empty($appointment['case_title'])): ?>
+                <p class="text-xs text-gray-500 mt-1">
+                    Case: <?php echo htmlspecialchars($appointment['case_title']); ?>
+                </p>
+                <?php endif; ?>
             </div>
+            <?php endforeach; ?>
+        </div>
         <?php endif; ?>
     </div>
-    
+
     <!-- Recent Activities -->
     <div class="bg-white rounded-lg shadow p-6">
         <div class="flex justify-between items-center mb-4">
             <h2 class="text-lg font-semibold">Recent Activities</h2>
             <a href="/advocate/cases/activities.php" class="text-sm text-blue-600 hover:underline">View All</a>
         </div>
-        
+
         <?php if (empty($recentActivities)): ?>
-            <div class="text-center py-6">
-                <div class="text-gray-400 mb-2"><i class="fas fa-history text-3xl"></i></div>
-                <p class="text-gray-500">No recent activities</p>
-            </div>
+        <div class="text-center py-6">
+            <div class="text-gray-400 mb-2"><i class="fas fa-history text-3xl"></i></div>
+            <p class="text-gray-500">No recent activities</p>
+        </div>
         <?php else: ?>
-            <div class="space-y-4">
-                <?php foreach ($recentActivities as $activity): ?>
-                    <div class="flex">
-                        <div class="flex-shrink-0 mr-3">
-                            <?php
+        <div class="space-y-4">
+            <?php foreach ($recentActivities as $activity): ?>
+            <div class="flex">
+                <div class="flex-shrink-0 mr-3">
+                    <?php
                             $iconClass = 'fas fa-info-circle text-blue-500';
                             switch ($activity['activity_type']) {
                                 case 'update':
@@ -346,58 +352,64 @@ $conn->close();
                                     break;
                             }
                             ?>
-                            <div class="bg-gray-100 rounded-full p-2">
-                                <i class="<?php echo $iconClass; ?>"></i>
-                            </div>
-                        </div>
-                        <div>
-                            <p class="text-sm font-medium">
-                                <?php echo htmlspecialchars($activity['case_title']); ?>
-                            </p>
-                            <p class="text-xs text-gray-500">
-                                <?php echo htmlspecialchars($activity['description']); ?>
-                            </p>
-                            <p class="text-xs text-gray-400 mt-1">
-                                <?php echo date('M d, Y h:i A', strtotime($activity['activity_date'])); ?>
-                            </p>
-                        </div>
+                    <div class="bg-gray-100 rounded-full p-2">
+                        <i class="<?php echo $iconClass; ?>"></i>
                     </div>
-                <?php endforeach; ?>
+                </div>
+                <div>
+                    <p class="text-sm font-medium">
+                        <?php echo htmlspecialchars($activity['case_title']); ?>
+                    </p>
+                    <p class="text-xs text-gray-500">
+                        <?php echo htmlspecialchars($activity['description']); ?>
+                    </p>
+                    <p class="text-xs text-gray-400 mt-1">
+                        <?php echo date('M d, Y h:i A', strtotime($activity['activity_date'])); ?>
+                    </p>
+                </div>
             </div>
+            <?php endforeach; ?>
+        </div>
         <?php endif; ?>
     </div>
-    
+
     <!-- Quick Actions -->
     <div class="bg-white rounded-lg shadow p-6">
         <h2 class="text-lg font-semibold mb-4">Quick Actions</h2>
-        
+
         <div class="grid grid-cols-2 gap-4">
-            <a href="cases/create.php" class="flex flex-col items-center justify-center p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition duration-200">
+            <a href="cases/create.php"
+                class="flex flex-col items-center justify-center p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition duration-200">
                 <div class="text-blue-500 mb-2"><i class="fas fa-briefcase text-2xl"></i></div>
                 <span class="text-sm font-medium text-gray-700">New Case</span>
             </a>
-            
-            <a href="appointments/create.php" class="flex flex-col items-center justify-center p-4 bg-green-50 rounded-lg hover:bg-green-100 transition duration-200">
+
+            <a href="appointments/create.php"
+                class="flex flex-col items-center justify-center p-4 bg-green-50 rounded-lg hover:bg-green-100 transition duration-200">
                 <div class="text-green-500 mb-2"><i class="fas fa-calendar-plus text-2xl"></i></div>
                 <span class="text-sm font-medium text-gray-700">Schedule Appointment</span>
             </a>
-            
-            <a href="documents/upload.php" class="flex flex-col items-center justify-center p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition duration-200">
+
+            <a href="documents/upload.php"
+                class="flex flex-col items-center justify-center p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition duration-200">
                 <div class="text-purple-500 mb-2"><i class="fas fa-file-upload text-2xl"></i></div>
                 <span class="text-sm font-medium text-gray-700">Upload Document</span>
             </a>
-            
-            <a href="time-tracking/log-activity.php" class="hidden flex-col items-center justify-center p-4 bg-orange-50 rounded-lg hover:bg-orange-100 transition duration-200">
+
+            <a href="time-tracking/log-activity.php"
+                class="hidden flex-col items-center justify-center p-4 bg-orange-50 rounded-lg hover:bg-orange-100 transition duration-200">
                 <div class="text-orange-500 mb-2"><i class="fas fa-clock text-2xl"></i></div>
                 <span class="text-sm font-medium text-gray-700">Log Time</span>
             </a>
-            
-            <a href="finance/invoices/create.php" class="flex flex-col items-center justify-center p-4 bg-red-50 rounded-lg hover:bg-red-100 transition duration-200">
+
+            <a href="finance/invoices/create.php"
+                class="flex flex-col items-center justify-center p-4 bg-red-50 rounded-lg hover:bg-red-100 transition duration-200">
                 <div class="text-red-500 mb-2"><i class="fas fa-file-invoice-dollar text-2xl"></i></div>
                 <span class="text-sm font-medium text-gray-700">Create Invoice</span>
             </a>
-            
-            <a href="clients/index.php" class="flex flex-col items-center justify-center p-4 bg-yellow-50 rounded-lg hover:bg-yellow-100 transition duration-200">
+
+            <a href="clients/index.php"
+                class="flex flex-col items-center justify-center p-4 bg-yellow-50 rounded-lg hover:bg-yellow-100 transition duration-200">
                 <div class="text-yellow-500 mb-2"><i class="fas fa-users text-2xl"></i></div>
                 <span class="text-sm font-medium text-gray-700">View Clients</span>
             </a>
@@ -427,7 +439,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     '#F59E0B', // amber
                     '#6B7280', // gray
                     '#10B981', // green
-                    '#EF4444'  // red
+                    '#EF4444' // red
                 ],
                 borderWidth: 0
             }]
@@ -447,15 +459,14 @@ document.addEventListener('DOMContentLoaded', function() {
             cutout: '70%'
         }
     });
-    
+
     // Financial Chart - Last 6 months
     const financialCtx = document.getElementById('financialChart').getContext('2d');
     const financialChart = new Chart(financialCtx, {
         type: 'bar',
         data: {
             labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-            datasets: [
-                {
+            datasets: [{
                     label: 'Income',
                     data: [4500, 5200, 3800, 5100, 6200, 4800],
                     backgroundColor: 'rgba(59, 130, 246, 0.7)',

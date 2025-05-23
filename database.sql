@@ -20,7 +20,7 @@ CREATE TABLE users (
 
 -- Advocate profiles (extends users)
 CREATE TABLE advocate_profiles (
-    advocate_id INT PRIMARY KEY,
+    advocate_id INT PRIMARY KEY AUTO_INCREMENT,
     user_id INT UNIQUE,
     license_number VARCHAR(50) UNIQUE NOT NULL,
     specialization VARCHAR(100),
@@ -28,6 +28,9 @@ CREATE TABLE advocate_profiles (
     education TEXT,
     bio TEXT,
     hourly_rate DECIMAL(10, 2),
+    total_income_ytd DECIMAL(12, 2) DEFAULT 0,
+    total_expenses_ytd DECIMAL(12, 2) DEFAULT 0,
+    profit_ytd DECIMAL(12, 2) DEFAULT 0,
     FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
 );
 
@@ -168,7 +171,7 @@ CREATE TABLE contact_requests (
     status ENUM('new', 'in_progress', 'completed') DEFAULT 'new',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-);
+); 
 CREATE TABLE newsletter_subscribers (
     id INT AUTO_INCREMENT PRIMARY KEY,
     email VARCHAR(100) NOT NULL UNIQUE,
@@ -183,7 +186,6 @@ ALTER TABLE users ADD COLUMN verification_token VARCHAR(64);
 INSERT INTO users (username, password, email, full_name, user_type) VALUES ('admin', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin@example.com', 'System Administrator', 'admin');
 
 ALTER TABLE users MODIFY COLUMN status ENUM('active', 'inactive', 'suspended', 'pending') DEFAULT 'active';
-ALTER TABLE advocate_profiles MODIFY advocate_id INT AUTO_INCREMENT PRIMARY KEY;
 ALTER TABLE users 
 ADD COLUMN reset_token VARCHAR(64) NULL,
 ADD COLUMN reset_token_expiry DATETIME NULL;
@@ -320,8 +322,5 @@ CREATE TABLE messages (
     FOREIGN KEY (sender_id) REFERENCES users(user_id) ON DELETE CASCADE
 );
 
--- Add fields to advocate_profiles for financial tracking
-ALTER TABLE advocate_profiles ADD COLUMN total_income_ytd DECIMAL(12, 2) DEFAULT 0;
-ALTER TABLE advocate_profiles ADD COLUMN total_expenses_ytd DECIMAL(12, 2) DEFAULT 0;
-ALTER TABLE advocate_profiles ADD COLUMN profit_ytd DECIMAL(12, 2) DEFAULT 0;
+
 

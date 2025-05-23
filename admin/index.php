@@ -1,11 +1,12 @@
 <?php
+// error reporting
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 // Include necessary files
 require_once '../config/database.php';
 require_once '../includes/functions.php';
 require_once '../includes/auth.php';
-// error reporting
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
+
 
 // Check if user is logged in and is an admin
 requireLogin();
@@ -137,17 +138,19 @@ include 'includes/header.php';
             <h1 class="text-3xl font-bold text-gray-800">Admin Dashboard</h1>
             <p class="text-gray-600">Welcome to the Advocate Management System</p>
         </div>
-        
+
         <div class="mt-4 md:mt-0 flex space-x-3">
-            <a href="users/index.php" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg inline-flex items-center">
+            <a href="users/index.php"
+                class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg inline-flex items-center">
                 <i class="fas fa-user-plus mr-2"></i> View users
             </a>
-            <a href="settings/index.php" class="bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-lg inline-flex items-center">
+            <a href="settings/index.php"
+                class="bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-lg inline-flex items-center">
                 <i class="fas fa-cog mr-2"></i> Settings
             </a>
         </div>
     </div>
-    
+
     <?php if ($pendingAdvocatesCount > 0): ?>
     <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-8">
         <div class="flex">
@@ -156,7 +159,8 @@ include 'includes/header.php';
             </div>
             <div class="ml-3">
                 <p class="text-sm text-yellow-700">
-                    There are <span class="font-medium"><?php echo $pendingAdvocatesCount; ?></span> advocate registrations pending approval.
+                    There are <span class="font-medium"><?php echo $pendingAdvocatesCount; ?></span> advocate
+                    registrations pending approval.
                     <a href="advocates/pending.php" class="font-medium underline text-yellow-700 hover:text-yellow-600">
                         Review now
                     </a>
@@ -165,7 +169,7 @@ include 'includes/header.php';
         </div>
     </div>
     <?php endif; ?>
-    
+
     <!-- Statistics Cards -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <!-- User Statistics -->
@@ -181,13 +185,15 @@ include 'includes/header.php';
             </div>
             <div class="mt-4">
                 <div class="flex justify-between text-sm">
-                    <span class="text-blue-500"><?php echo number_format($userCounts['advocate_count']); ?> Advocates</span>
-                    <span class="text-green-500"><?php echo number_format($userCounts['client_count']); ?> Clients</span>
+                    <span class="text-blue-500"><?php echo number_format($userCounts['advocate_count']); ?>
+                        Advocates</span>
+                    <span class="text-green-500"><?php echo number_format($userCounts['client_count']); ?>
+                        Clients</span>
                     <span class="text-purple-500"><?php echo number_format($userCounts['admin_count']); ?> Admins</span>
                 </div>
             </div>
         </div>
-        
+
         <!-- Case Statistics -->
         <div class="bg-white rounded-lg shadow-md p-6">
             <div class="flex items-center">
@@ -201,13 +207,14 @@ include 'includes/header.php';
             </div>
             <div class="mt-4">
                 <div class="flex justify-between text-sm">
-                    <span class="text-yellow-500"><?php echo number_format($caseStats['pending_cases']); ?> Pending</span>
+                    <span class="text-yellow-500"><?php echo number_format($caseStats['pending_cases']); ?>
+                        Pending</span>
                     <span class="text-blue-500"><?php echo number_format($caseStats['active_cases']); ?> Active</span>
                     <span class="text-gray-500"><?php echo number_format($caseStats['closed_cases']); ?> Closed</span>
                 </div>
             </div>
         </div>
-        
+
         <!-- Financial Statistics -->
         <div class="bg-white rounded-lg shadow-md p-6">
             <div class="flex items-center">
@@ -216,18 +223,22 @@ include 'includes/header.php';
                 </div>
                 <div>
                     <p class="text-gray-500 text-sm">Total Billed</p>
-                    <p class="text-2xl font-semibold"><?php echo formatCurrency($financialSummary['total_billed']); ?></p>
+                    <p class="text-2xl font-semibold"><?php echo formatCurrency($financialSummary['total_billed']); ?>
+                    </p>
                 </div>
             </div>
             <div class="mt-4">
                 <div class="flex justify-between text-sm">
-                    <span class="text-green-500"><?php echo formatCurrency($financialSummary['total_paid']); ?> Paid</span>
-                    <span class="text-yellow-500"><?php echo formatCurrency($financialSummary['total_pending']); ?> Pending</span>
-                    <span class="text-red-500"><?php echo formatCurrency($financialSummary['total_overdue']); ?> Overdue</span>
+                    <span class="text-green-500"><?php echo formatCurrency($financialSummary['total_paid']); ?>
+                        Paid</span>
+                    <span class="text-yellow-500"><?php echo formatCurrency($financialSummary['total_pending']); ?>
+                        Pending</span>
+                    <span class="text-red-500"><?php echo formatCurrency($financialSummary['total_overdue']); ?>
+                        Overdue</span>
                 </div>
             </div>
         </div>
-        
+
         <!-- Case Outcomes -->
         <div class="bg-white rounded-lg shadow-md p-6">
             <div class="flex items-center">
@@ -236,7 +247,8 @@ include 'includes/header.php';
                 </div>
                 <div>
                     <p class="text-gray-500 text-sm">Case Outcomes</p>
-                    <p class="text-2xl font-semibold"><?php echo number_format($caseStats['closed_cases']); ?> Closed</p>
+                    <p class="text-2xl font-semibold"><?php echo number_format($caseStats['closed_cases']); ?> Closed
+                    </p>
                 </div>
             </div>
             <div class="mt-4">
@@ -248,7 +260,7 @@ include 'includes/header.php';
             </div>
         </div>
     </div>
-    
+
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
         <!-- Recent Users -->
         <div class="bg-white rounded-lg shadow-md overflow-hidden">
@@ -256,26 +268,27 @@ include 'includes/header.php';
                 <h2 class="text-lg font-semibold text-gray-800">Recent Users</h2>
                 <a href="users/index.php" class="text-blue-600 hover:text-blue-800 text-sm font-medium">View All</a>
             </div>
-            
+
             <div class="divide-y divide-gray-200">
                 <?php if ($recentUsersResult->num_rows === 0): ?>
-                    <div class="px-6 py-4 text-center text-gray-500">No users found</div>
+                <div class="px-6 py-4 text-center text-gray-500">No users found</div>
                 <?php else: ?>
-                    <?php while ($user = $recentUsersResult->fetch_assoc()): ?>
-                        <div class="px-6 py-4 flex items-center">
-                            <div class="flex-shrink-0">
-                                <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
-                                    <i class="fas fa-user text-gray-500"></i>
-                                </div>
+                <?php while ($user = $recentUsersResult->fetch_assoc()): ?>
+                <div class="px-6 py-4 flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
+                            <i class="fas fa-user text-gray-500"></i>
+                        </div>
+                    </div>
+                    <div class="ml-4 flex-1">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h3 class="text-sm font-medium text-gray-900">
+                                    <?php echo htmlspecialchars($user['full_name']); ?></h3>
+                                <p class="text-sm text-gray-500"><?php echo htmlspecialchars($user['email']); ?></p>
                             </div>
-                            <div class="ml-4 flex-1">
-                                <div class="flex items-center justify-between">
-                                    <div>
-                                        <h3 class="text-sm font-medium text-gray-900"><?php echo htmlspecialchars($user['full_name']); ?></h3>
-                                        <p class="text-sm text-gray-500"><?php echo htmlspecialchars($user['email']); ?></p>
-                                    </div>
-                                    <div class="flex items-center">
-                                        <?php
+                            <div class="flex items-center">
+                                <?php
                                         $statusClass = 'bg-gray-100 text-gray-800';
                                         switch ($user['status']) {
                                             case 'active':
@@ -302,48 +315,52 @@ include 'includes/header.php';
                                                 break;
                                         }
                                         ?>
-                                        <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full <?php echo $typeClass; ?> mr-2">
-                                            <?php echo ucfirst($user['user_type']); ?>
-                                        </span>
-                                        <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full <?php echo $statusClass; ?>">
-                                            <?php echo ucfirst($user['status']); ?>
-                                        </span>
-                                    </div>
-                                </div>
-                                <div class="mt-1 text-xs text-gray-500">
-                                    Joined <?php echo formatDateTimeRelative($user['created_at']); ?>
-                                </div>
+                                <span
+                                    class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full <?php echo $typeClass; ?> mr-2">
+                                    <?php echo ucfirst($user['user_type']); ?>
+                                </span>
+                                <span
+                                    class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full <?php echo $statusClass; ?>">
+                                    <?php echo ucfirst($user['status']); ?>
+                                </span>
                             </div>
                         </div>
-                    <?php endwhile; ?>
+                        <div class="mt-1 text-xs text-gray-500">
+                            Joined <?php echo formatDateTimeRelative($user['created_at']); ?>
+                        </div>
+                    </div>
+                </div>
+                <?php endwhile; ?>
                 <?php endif; ?>
             </div>
         </div>
-        
+
         <!-- Recent Cases -->
         <div class="bg-white rounded-lg shadow-md overflow-hidden">
             <div class="px-6 py-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
                 <h2 class="text-lg font-semibold text-gray-800">Recent Cases</h2>
                 <a href="cases/index.php" class="text-blue-600 hover:text-blue-800 text-sm font-medium">View All</a>
             </div>
-            
+
             <div class="divide-y divide-gray-200">
                 <?php if ($recentCasesResult->num_rows === 0): ?>
-                    <div class="px-6 py-4 text-center text-gray-500">No cases found</div>
+                <div class="px-6 py-4 text-center text-gray-500">No cases found</div>
                 <?php else: ?>
-                    <?php while ($case = $recentCasesResult->fetch_assoc()): ?>
-                        <div class="px-6 py-4">
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <h3 class="text-sm font-medium text-gray-900">
-                                        <a href="cases/view.php?id=<?php echo $case['case_id']; ?>" class="hover:underline">
-                                            <?php echo htmlspecialchars($case['case_number']); ?>: <?php echo htmlspecialchars($case['title']); ?>
-                                        </a>
-                                    </h3>
-                                    <p class="text-sm text-gray-500">Client: <?php echo htmlspecialchars($case['client_name']); ?></p>
-                                </div>
-                                <div>
-                                    <?php
+                <?php while ($case = $recentCasesResult->fetch_assoc()): ?>
+                <div class="px-6 py-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h3 class="text-sm font-medium text-gray-900">
+                                <a href="cases/view.php?id=<?php echo $case['case_id']; ?>" class="hover:underline">
+                                    <?php echo htmlspecialchars($case['case_number']); ?>:
+                                    <?php echo htmlspecialchars($case['title']); ?>
+                                </a>
+                            </h3>
+                            <p class="text-sm text-gray-500">Client:
+                                <?php echo htmlspecialchars($case['client_name']); ?></p>
+                        </div>
+                        <div>
+                            <?php
                                     $caseStatusClass = 'bg-gray-100 text-gray-800';
                                     switch ($case['status']) {
                                         case 'pending':
@@ -366,36 +383,37 @@ include 'includes/header.php';
                                             break;
                                     }
                                     ?>
-                                    <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full <?php echo $caseStatusClass; ?>">
-                                        <?php echo ucfirst($case['status']); ?>
-                                    </span>
-                                </div>
-                            </div>
-                            <div class="mt-1 text-xs text-gray-500">
-                                Filed on <?php echo formatDate($case['filing_date']); ?>
-                            </div>
+                            <span
+                                class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full <?php echo $caseStatusClass; ?>">
+                                <?php echo ucfirst($case['status']); ?>
+                            </span>
                         </div>
-                    <?php endwhile; ?>
+                    </div>
+                    <div class="mt-1 text-xs text-gray-500">
+                        Filed on <?php echo formatDate($case['filing_date']); ?>
+                    </div>
+                </div>
+                <?php endwhile; ?>
                 <?php endif; ?>
             </div>
         </div>
     </div>
-    
+
     <!-- Recent Activities -->
     <div class="bg-white rounded-lg shadow-md overflow-hidden mb-8">
         <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
             <h2 class="text-lg font-semibold text-gray-800">Recent Activities</h2>
         </div>
-        
+
         <div class="divide-y divide-gray-200">
             <?php if ($recentActivitiesResult->num_rows === 0): ?>
-                <div class="px-6 py-4 text-center text-gray-500">No activities found</div>
+            <div class="px-6 py-4 text-center text-gray-500">No activities found</div>
             <?php else: ?>
-                <?php while ($activity = $recentActivitiesResult->fetch_assoc()): ?>
-                    <div class="px-6 py-4">
-                        <div class="flex">
-                            <div class="flex-shrink-0">
-                                <?php
+            <?php while ($activity = $recentActivitiesResult->fetch_assoc()): ?>
+            <div class="px-6 py-4">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <?php
                                 $activityIconClass = 'fas fa-info-circle text-blue-500';
                                 switch ($activity['activity_type']) {
                                     case 'update':
@@ -415,15 +433,15 @@ include 'includes/header.php';
                                         break;
                                 }
                                 ?>
-                                <div class="h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center">
-                                    <i class="<?php echo $activityIconClass; ?>"></i>
-                                </div>
-                            </div>
-                            <div class="ml-4 flex-1">
-                                <div class="text-sm text-gray-900">
-                                    <span class="font-medium"><?php echo htmlspecialchars($activity['user_name']); ?></span>
-                                    <span class="text-gray-600">
-                                        <?php
+                        <div class="h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center">
+                            <i class="<?php echo $activityIconClass; ?>"></i>
+                        </div>
+                    </div>
+                    <div class="ml-4 flex-1">
+                        <div class="text-sm text-gray-900">
+                            <span class="font-medium"><?php echo htmlspecialchars($activity['user_name']); ?></span>
+                            <span class="text-gray-600">
+                                <?php
                                         switch ($activity['activity_type']) {
                                             case 'update':
                                                 echo 'updated';
@@ -444,25 +462,26 @@ include 'includes/header.php';
                                                 echo 'modified';
                                         }
                                         ?>
-                                    </span>
-                                    <a href="cases/view.php?id=<?php echo $activity['case_id']; ?>" class="font-medium text-blue-600 hover:underline">
-                                        <?php echo htmlspecialchars($activity['case_number']); ?>
-                                    </a>
-                                </div>
-                                <div class="mt-1 text-sm text-gray-600">
-                                    <?php echo htmlspecialchars($activity['description']); ?>
-                                </div>
-                                <div class="mt-1 text-xs text-gray-500">
-                                    <?php echo formatDateTimeRelative($activity['activity_date']); ?>
-                                </div>
-                            </div>
+                            </span>
+                            <a href="cases/view.php?id=<?php echo $activity['case_id']; ?>"
+                                class="font-medium text-blue-600 hover:underline">
+                                <?php echo htmlspecialchars($activity['case_number']); ?>
+                            </a>
+                        </div>
+                        <div class="mt-1 text-sm text-gray-600">
+                            <?php echo htmlspecialchars($activity['description']); ?>
+                        </div>
+                        <div class="mt-1 text-xs text-gray-500">
+                            <?php echo formatDateTimeRelative($activity['activity_date']); ?>
                         </div>
                     </div>
-                <?php endwhile; ?>
+                </div>
+            </div>
+            <?php endwhile; ?>
             <?php endif; ?>
         </div>
     </div>
-    
+
     <!-- Pending Advocate Approvals -->
     <?php if ($pendingAdvocatesCount > 0): ?>
     <div class="bg-white rounded-lg shadow-md overflow-hidden">
@@ -470,28 +489,35 @@ include 'includes/header.php';
             <h2 class="text-lg font-semibold text-gray-800">Pending Advocate Approvals</h2>
             <a href="advocates/pending.php" class="text-blue-600 hover:text-blue-800 text-sm font-medium">View All</a>
         </div>
-        
+
         <div class="divide-y divide-gray-200">
             <?php while ($advocate = $pendingAdvocatesResult->fetch_assoc()): ?>
-                <div class="px-6 py-4 flex items-center justify-between">
-                    <div>
-                        <h3 class="text-sm font-medium text-gray-900"><?php echo htmlspecialchars($advocate['full_name']); ?></h3>
-                        <p class="text-sm text-gray-500"><?php echo htmlspecialchars($advocate['email']); ?></p>
-                        <div class="mt-1 text-xs text-gray-500">
-                            <span class="font-medium">License:</span> <?php echo htmlspecialchars($advocate['license_number']); ?> |
-                            <span class="font-medium">Specialization:</span> <?php echo htmlspecialchars($advocate['specialization']); ?> |
-                            <span class="font-medium">Registered:</span> <?php echo formatDateTimeRelative($advocate['created_at']); ?>
-                        </div>
-                    </div>
-                    <div class="flex space-x-2">
-                        <a href="advocates/approve.php?id=<?php echo $advocate['user_id']; ?>&action=approve" class="bg-green-600 hover:bg-green-700 text-white text-sm font-medium py-2 px-4 rounded-lg">
-                            Approve
-                        </a>
-                        <a href="advocates/approve.php?id=<?php echo $advocate['user_id']; ?>&action=reject" class="bg-red-600 hover:bg-red-700 text-white text-sm font-medium py-2 px-4 rounded-lg" onclick="return confirm('Are you sure you want to reject this advocate?');">
-                            Reject
-                        </a>
+            <div class="px-6 py-4 flex items-center justify-between">
+                <div>
+                    <h3 class="text-sm font-medium text-gray-900">
+                        <?php echo htmlspecialchars($advocate['full_name']); ?></h3>
+                    <p class="text-sm text-gray-500"><?php echo htmlspecialchars($advocate['email']); ?></p>
+                    <div class="mt-1 text-xs text-gray-500">
+                        <span class="font-medium">License:</span>
+                        <?php echo htmlspecialchars($advocate['license_number']); ?> |
+                        <span class="font-medium">Specialization:</span>
+                        <?php echo htmlspecialchars($advocate['specialization']); ?> |
+                        <span class="font-medium">Registered:</span>
+                        <?php echo formatDateTimeRelative($advocate['created_at']); ?>
                     </div>
                 </div>
+                <div class="flex space-x-2">
+                    <a href="advocates/approve.php?id=<?php echo $advocate['user_id']; ?>&action=approve"
+                        class="bg-green-600 hover:bg-green-700 text-white text-sm font-medium py-2 px-4 rounded-lg">
+                        Approve
+                    </a>
+                    <a href="advocates/approve.php?id=<?php echo $advocate['user_id']; ?>&action=reject"
+                        class="bg-red-600 hover:bg-red-700 text-white text-sm font-medium py-2 px-4 rounded-lg"
+                        onclick="return confirm('Are you sure you want to reject this advocate?');">
+                        Reject
+                    </a>
+                </div>
+            </div>
             <?php endwhile; ?>
         </div>
     </div>
