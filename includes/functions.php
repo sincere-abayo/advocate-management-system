@@ -325,7 +325,7 @@ function getUserAppointments($userId, $userType) {
 
 // Format currency
 function formatCurrency($amount) {
-    return 'EWF ' . number_format($amount, 2);
+    return 'RWF' . number_format($amount, 2);
 }
 
 // Check if string contains a search term
