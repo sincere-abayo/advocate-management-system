@@ -188,7 +188,7 @@ include_once '../includes/header-minimal.php';
                 <p class="font-medium">Registration successful!</p>
                 <p>A verification email has been sent to your email address. Please check your inbox and follow the
                     instructions to verify your account.</p>
-                <p class="mt-4"><a href="/auth/login.php" class="text-green-700 font-semibold hover:underline">Go to
+                <p class="mt-4"><a href="login.php" class="text-green-700 font-semibold hover:underline">Go to
                         Login</a></p>
                 <p class="text-sm mt-2">You will be redirected to the login page in <span id="countdown">3</span>
                     seconds...</p>

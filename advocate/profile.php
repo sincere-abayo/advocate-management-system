@@ -87,7 +87,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Handle profile image upload
         $profileImage = $userData['profile_image'];
         if (isset($_FILES['profile_image']) && $_FILES['profile_image']['size'] > 0) {
-            $uploadDir = '../uploads/profile_images/';
+            $uploadDir = '../uploads/profiles/';
             $fileName = time() . '_' . basename($_FILES['profile_image']['name']);
             $targetFile = $uploadDir . $fileName;
             $imageFileType = strtolower(pathinfo($targetFile, PATHINFO_EXTENSION));
@@ -220,7 +220,7 @@ include 'includes/header.php';
             <div class="text-center">
                 <div class="mb-4">
                     <?php if (!empty($userData['profile_image'])): ?>
-                        <img src="../uploads/profile_images/<?php echo $userData['profile_image']; ?>" alt="Profile Image" class="h-32 w-32 rounded-full mx-auto object-cover border-4 border-blue-100">
+                        <img src="../uploads/profiles/<?php echo $userData['profile_image']; ?>" alt="Profile Image" class="h-32 w-32 rounded-full mx-auto object-cover border-4 border-blue-100">
                     <?php else: ?>
                         <div class="h-32 w-32 rounded-full mx-auto bg-blue-100 flex items-center justify-center">
                             <i class="fas fa-user text-blue-500 text-4xl"></i>

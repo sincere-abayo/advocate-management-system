@@ -161,7 +161,7 @@ include '../includes/header.php';
             <div class="flex items-center">
                 <div class="w-10 h-10 rounded-full bg-gray-300 overflow-hidden mr-3">
                     <?php if ($otherUserImage): ?>
-                        <img src="<?php echo $otherUserImage; ?>" alt="<?php echo htmlspecialchars($otherUserName); ?>" class="w-full h-full object-cover">
+                        <img src="../../uploads/profiles/<?php echo $otherUserImage; ?>" alt="<?php echo htmlspecialchars($otherUserName); ?>" class="w-full h-full object-cover">
                     <?php else: ?>
                         <div class="w-full h-full flex items-center justify-center bg-blue-500 text-white">
                             <?php echo strtoupper(substr($otherUserName, 0, 1)); ?>
@@ -217,7 +217,7 @@ include '../includes/header.php';
                         <?php if (!$isOwnMessage): ?>
                             <div class="w-8 h-8 rounded-full bg-gray-300 overflow-hidden mr-2 flex-shrink-0">
                                 <?php if ($message['sender_image']): ?>
-                                    <img src="<?php echo $message['sender_image']; ?>" alt="<?php echo htmlspecialchars($message['sender_name']); ?>" class="w-full h-full object-cover">
+                                    <img src="../../uploads/profiles/<?php echo $message['sender_image']; ?>" alt="<?php echo htmlspecialchars($message['sender_name']); ?>" class="w-full h-full object-cover">
                                 <?php else: ?>
                                     <div class="w-full h-full flex items-center justify-center bg-blue-500 text-white">
                                         <?php echo strtoupper(substr($message['sender_name'], 0, 1)); ?>

@@ -6,7 +6,6 @@ require_once 'config/database.php';
 require_once 'includes/functions.php';
 require_once 'includes/auth.php';
 
-
 // Check if user is logged in
 $isLoggedIn = isLoggedIn();
 
@@ -209,7 +208,7 @@ include 'includes/header.php';
 </section>
 
 <!-- Dashboard Preview Section -->
-<section class="py-16 bg-gray-50">
+<section class="py-16 bg-gray-50 hidden">
     <div class="container mx-auto px-4">
         <div class="text-center mb-16">
             <h2 class="text-3xl font-bold text-gray-800 mb-4">Powerful Dashboard Interface</h2>
