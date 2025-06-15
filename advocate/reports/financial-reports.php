@@ -848,7 +848,7 @@ $conn->close();
         <div class="bg-white rounded-lg shadow-md p-6 mb-6">
             <div class="flex justify-between items-center mb-4">
                 <h2 class="text-lg font-semibold text-gray-800">Recent Income Transactions</h2>
-                <a href="../finance/income/index.php" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                <a href="../finance/income.php" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
                     View All <i class="fas fa-arrow-right ml-1"></i>
                 </a>
             </div>

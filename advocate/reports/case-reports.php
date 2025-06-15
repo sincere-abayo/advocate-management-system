@@ -203,25 +203,37 @@ $outcomeWon = array_reverse($outcomeWon);
 $outcomeLost = array_reverse($outcomeLost);
 $outcomeSettled = array_reverse($outcomeSettled);
 
-// Get top performing cases (by financial metrics)
 $topCasesQuery = "
     SELECT 
         c.case_id,
         c.case_number,
         c.title,
         c.status,
-        c.total_income,
-        c.total_expenses,
-        c.profit,
-        CASE WHEN c.total_income > 0 THEN (c.profit / c.total_income) * 100 ELSE 0 END as margin
+        COALESCE(SUM(b.amount), 0) as total_income,
+        COALESCE((SELECT SUM(amount) FROM case_expenses ce WHERE ce.case_id = c.case_id AND ce.advocate_id = ? AND YEAR(ce.expense_date) = ?), 0) as total_expenses,
+        (COALESCE(SUM(b.amount), 0) - COALESCE((SELECT SUM(amount) FROM case_expenses ce WHERE ce.case_id = c.case_id AND ce.advocate_id = ? AND YEAR(ce.expense_date) = ?), 0)) as profit,
+        CASE 
+            WHEN COALESCE(SUM(b.amount), 0) > 0 
+            THEN ((COALESCE(SUM(b.amount), 0) - COALESCE((SELECT SUM(amount) FROM case_expenses ce WHERE ce.case_id = c.case_id AND ce.advocate_id = ? AND YEAR(ce.expense_date) = ?), 0)) / COALESCE(SUM(b.amount), 0)) * 100 
+            ELSE 0 
+        END as margin
     FROM cases c
     JOIN case_assignments ca ON c.case_id = ca.case_id
+    LEFT JOIN billings b ON b.case_id = c.case_id AND b.advocate_id = ? AND b.status = 'paid' AND YEAR(b.payment_date) = ?
     WHERE ca.advocate_id = ?
-    ORDER BY c.profit DESC
+    GROUP BY c.case_id
+    ORDER BY profit DESC
     LIMIT 10
 ";
 $topCasesStmt = $conn->prepare($topCasesQuery);
-$topCasesStmt->bind_param("i", $advocateId);
+$topCasesStmt->bind_param(
+    "iiiiiiiii", 
+    $advocateId, $selectedYear, // 1st subquery
+    $advocateId, $selectedYear, // 2nd subquery
+    $advocateId, $selectedYear, // 3rd subquery
+    $advocateId, $selectedYear, // LEFT JOIN
+    $advocateId                 // WHERE
+);
 $topCasesStmt->execute();
 $topCasesResult = $topCasesStmt->get_result();
 
@@ -250,19 +262,18 @@ $expensesResult = $expensesStmt->get_result();
 // Get income data
 $incomeQuery = "
     SELECT 
-        ci.income_id,
-        ci.case_id,
+        b.billing_id,
+        b.case_id,
         c.case_number,
         c.title as case_title,
-        ci.income_date,
-        ci.amount,
-        ci.description,
-        ci.income_category,
-        ci.payment_method
-    FROM case_income ci
-    LEFT JOIN cases c ON ci.case_id = c.case_id
-    WHERE ci.advocate_id = ? AND YEAR(ci.income_date) = ?
-    ORDER BY ci.income_date DESC
+        b.payment_date as income_date,
+        b.amount,
+        b.description,
+        b.payment_method
+    FROM billings b
+    LEFT JOIN cases c ON b.case_id = c.case_id
+    WHERE b.advocate_id = ? AND b.status = 'paid' AND YEAR(b.payment_date) = ?
+    ORDER BY b.payment_date DESC
     LIMIT 10
 ";
 $incomeStmt = $conn->prepare($incomeQuery);
@@ -270,6 +281,26 @@ $incomeStmt->bind_param("ii", $advocateId, $selectedYear);
 $incomeStmt->execute();
 $incomeResult = $incomeStmt->get_result();
 
+// Get recent income from billings (paid only)
+$recentIncomeQuery = "
+    SELECT 
+        b.billing_id,
+        b.case_id,
+        c.case_number,
+        c.title as case_title,
+        b.amount,
+        b.payment_method,
+        b.payment_date
+    FROM billings b
+    LEFT JOIN cases c ON b.case_id = c.case_id
+    WHERE b.advocate_id = ? AND b.status = 'paid' AND YEAR(b.payment_date) = ?
+    ORDER BY b.payment_date DESC
+    LIMIT 10
+";
+$recentIncomeStmt = $conn->prepare($recentIncomeQuery);
+$recentIncomeStmt->bind_param("ii", $advocateId, $selectedYear);
+$recentIncomeStmt->execute();
+$recentIncomeResult = $recentIncomeStmt->get_result();
 // Get invoice data
 $invoicesQuery = "
     SELECT 
@@ -301,15 +332,13 @@ $invoicesResult = $invoicesStmt->get_result();
 // Get financial statistics
 $financialStatsQuery = "
     SELECT 
-        COALESCE(SUM(ci.amount), 0) as total_income,
+        (SELECT COALESCE(SUM(amount), 0) FROM billings WHERE advocate_id = ? AND status = 'paid' AND YEAR(payment_date) = ?) as total_income,
         (SELECT COALESCE(SUM(amount), 0) FROM case_expenses WHERE advocate_id = ? AND YEAR(expense_date) = ?) as total_expenses,
         (SELECT COUNT(*) FROM billings WHERE advocate_id = ? AND YEAR(billing_date) = ?) as total_invoices,
         (SELECT COUNT(*) FROM billings WHERE advocate_id = ? AND YEAR(billing_date) = ? AND status = 'paid') as paid_invoices,
         (SELECT COUNT(*) FROM billings WHERE advocate_id = ? AND YEAR(billing_date) = ? AND status = 'pending') as pending_invoices,
         (SELECT COUNT(*) FROM billings WHERE advocate_id = ? AND YEAR(billing_date) = ? AND status = 'overdue') as overdue_invoices,
         (SELECT COALESCE(SUM(amount), 0) FROM billings WHERE advocate_id = ? AND YEAR(billing_date) = ? AND status = 'paid') as paid_amount
-    FROM case_income ci
-    WHERE ci.advocate_id = ? AND YEAR(ci.income_date) = ?
 ";
 $financialStatsStmt = $conn->prepare($financialStatsQuery);
 $financialStatsStmt->bind_param("iiiiiiiiiiiiii", 
@@ -702,7 +731,7 @@ $conn->close();
     <div class="flex justify-between items-center mb-4">
         <h2 class="text-lg font-semibold text-gray-800">Recent Income (<?php echo $selectedYear; ?>)</h2>
         <div class="flex space-x-2">
-            <a href="../finance/income/index.php" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+            <a href="../finance/income.php" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
                 View All <i class="fas fa-arrow-right ml-1"></i>
             </a>
             <button class="download-section-pdf bg-green-600 hover:bg-green-700 text-white font-medium py-1 px-3 rounded-lg text-sm inline-flex items-center" data-section="income-table">
@@ -710,9 +739,8 @@ $conn->close();
             </button>
         </div>
     </div>
-    
     <div id="income-table" class="overflow-x-auto">
-        <?php if ($incomeResult->num_rows === 0): ?>
+        <?php if ($recentIncomeResult->num_rows === 0): ?>
             <div class="text-center py-8 text-gray-500">
                 <p>No income data available for the selected year.</p>
             </div>
@@ -720,36 +748,29 @@ $conn->close();
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Case</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payment Method</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Case</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payment Method</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
-                    <?php while ($income = $incomeResult->fetch_assoc()): ?>
+                    <?php while ($income = $recentIncomeResult->fetch_assoc()): ?>
                         <tr>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                <?php echo date('M d, Y', strtotime($income['income_date'])); ?>
+                                <?php echo date('M d, Y', strtotime($income['payment_date'])); ?>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                 <?php if ($income['case_id']): ?>
                                     <a href="../cases/view.php?id=<?php echo $income['case_id']; ?>" class="text-blue-600 hover:text-blue-900">
                                         <?php echo htmlspecialchars($income['case_number']); ?>
                                     </a>
+                                    <span class="text-gray-500"><?php echo htmlspecialchars($income['case_title']); ?></span>
                                 <?php else: ?>
                                     <span class="text-gray-500">No Case</span>
                                 <?php endif; ?>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                <?php echo htmlspecialchars($income['income_category'] ?? 'Uncategorized'); ?>
-                            </td>
-                            <td class="px-6 py-4 text-sm text-gray-900">
-                                <?php echo htmlspecialchars($income['description']); ?>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                                 <?php echo formatCurrency($income['amount']); ?>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -762,7 +783,6 @@ $conn->close();
         <?php endif; ?>
     </div>
 </div>
-
 <!-- Invoices Table -->
 <div class="bg-white rounded-lg shadow-md p-6 mb-6">
     <div class="flex justify-between items-center mb-4">
