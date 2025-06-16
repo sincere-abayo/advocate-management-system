@@ -121,8 +121,11 @@ $conn->close();
             <p class="text-gray-600">View performance metrics and analytics</p>
         </div>
         <div class="mt-4 md:mt-0 flex space-x-2">
-            <a href="case-reports.php" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg">Case Reports</a>
-            <a href="financial-reports.php" class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg">Financial Reports</a>
+            <a href="case-reports.php"
+                class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg">Case Reports</a>
+            <a href="financial-reports.php"
+                class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg">Financial
+                Reports</a>
         </div>
     </div>
     <!-- Summary Cards -->
@@ -148,7 +151,9 @@ $conn->close();
             <div class="text-2xl font-bold">RWF <?= number_format($totalIncome, 2) ?></div>
             <div class="text-xs text-gray-500 mt-2">Monthly Average</div>
             <div class="w-full bg-gray-100 rounded-full h-2.5 mt-1">
-                <div class="bg-green-400 h-2.5 rounded-full" style="width:<?= min(100, ($monthlyAvgIncome > 0 ? ($monthlyAvgIncome / max($totalIncome,1)) * 100 : 0)) ?>%"></div>
+                <div class="bg-green-400 h-2.5 rounded-full"
+                    style="width:<?= min(100, ($monthlyAvgIncome > 0 ? ($monthlyAvgIncome / max($totalIncome,1)) * 100 : 0)) ?>%">
+                </div>
             </div>
             <div class="text-xs text-right text-gray-500 mt-1">RWF <?= number_format($monthlyAvgIncome, 2) ?></div>
         </div>
@@ -177,15 +182,15 @@ $conn->close();
         <h2 class="text-lg font-semibold mb-4">Upcoming Appointments</h2>
         <ul>
             <?php if ($appointmentsResult->num_rows === 0): ?>
-                <li class="text-gray-500">No upcoming appointments.</li>
+            <li class="text-gray-500">No upcoming appointments.</li>
             <?php else: while ($row = $appointmentsResult->fetch_assoc()): ?>
-                <li class="mb-2">
-                    <span class="font-medium"><?= htmlspecialchars($row['case_title'] ?? 'General') ?></span>
-                    <span class="text-gray-500">on <?= date('d M Y', strtotime($row['appointment_date'])) ?></span>
-                    <?php if (!empty($row['start_time'])): ?>
-                        <span class="text-gray-400">at <?= date('H:i', strtotime($row['start_time'])) ?></span>
-                    <?php endif; ?>
-                </li>
+            <li class="mb-2">
+                <span class="font-medium"><?= htmlspecialchars($row['case_title'] ?? 'General') ?></span>
+                <span class="text-gray-500">on <?= date('d M Y', strtotime($row['appointment_date'])) ?></span>
+                <?php if (!empty($row['start_time'])): ?>
+                <span class="text-gray-400">at <?= date('H:i', strtotime($row['start_time'])) ?></span>
+                <?php endif; ?>
+            </li>
             <?php endwhile; endif; ?>
         </ul>
         <a href="../appointments/index.php" class="text-blue-600 hover:underline text-sm">View all appointments</a>
@@ -195,16 +200,16 @@ $conn->close();
         <h2 class="text-lg font-semibold mb-4">Recent Case Activities</h2>
         <ul>
             <?php if ($activitiesResult->num_rows === 0): ?>
-                <li class="text-gray-500">No recent activities.</li>
+            <li class="text-gray-500">No recent activities.</li>
             <?php else: while ($row = $activitiesResult->fetch_assoc()): ?>
-                <li class="mb-2">
-                    <span class="font-medium"><?= htmlspecialchars($row['activity_type']) ?></span>
-                    <span class="text-gray-500">on <?= date('d M Y', strtotime($row['activity_date'])) ?></span>
-                    <span class="text-gray-400">by <?= htmlspecialchars($row['user_name']) ?></span>
-                    <?php if (!empty($row['case_title'])): ?>
-                        <span class="text-blue-600">[<?= htmlspecialchars($row['case_title']) ?>]</span>
-                    <?php endif; ?>
-                </li>
+            <li class="mb-2">
+                <span class="font-medium"><?= htmlspecialchars($row['activity_type']) ?></span>
+                <span class="text-gray-500">on <?= date('d M Y', strtotime($row['activity_date'])) ?></span>
+                <span class="text-gray-400">by <?= htmlspecialchars($row['user_name']) ?></span>
+                <?php if (!empty($row['case_title'])): ?>
+                <span class="text-blue-600">[<?= htmlspecialchars($row['case_title']) ?>]</span>
+                <?php endif; ?>
+            </li>
             <?php endwhile; endif; ?>
         </ul>
         <a href="../cases/" class="text-blue-600 hover:underline text-sm">View all activities</a>
@@ -219,7 +224,9 @@ document.addEventListener('DOMContentLoaded', function() {
     new Chart(ctx, {
         type: 'bar',
         data: {
-            labels: [<?= implode(',', array_map(fn($m) => "'".date('M', mktime(0,0,0,$m,1))."'", range(1,12))) ?>],
+            labels: [
+                <?= implode(',', array_map(fn($m) => "'".date('M', mktime(0,0,0,$m,1))."'", range(1,12))) ?>
+            ],
             datasets: [{
                 label: 'New Cases',
                 data: monthlyCases,
@@ -228,7 +235,11 @@ document.addEventListener('DOMContentLoaded', function() {
         },
         options: {
             responsive: true,
-            plugins: { legend: { display: false } }
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
         }
     });
 });

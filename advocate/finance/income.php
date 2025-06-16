@@ -99,7 +99,7 @@ $incomeResult = $incomeStmt->get_result();
                                     <span class="text-gray-400">N/A</span>
                                 <?php endif; ?>
                             </td>
-                            <td class="px-4 py-2 font-semibold">₹<?= number_format($row['amount'], 2) ?></td>
+                            <td class="px-4 py-2 font-semibold">RWF <?= number_format($row['amount'], 2) ?></td>
                             <td class="px-4 py-2"><?= htmlspecialchars($row['payment_method'] ?? 'N/A') ?></td>
                             <td class="px-4 py-2"><?= htmlspecialchars($row['description'] ?? '') ?></td>
                         </tr>
