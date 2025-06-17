@@ -83,7 +83,9 @@ $paymentMethodsQuery = "
     SELECT DISTINCT payment_method
     FROM billings
     WHERE advocate_id = ?
-    AND payment_method IS NOT NULL AND payment_method != ''
+    AND payment_method IS NOT NULL 
+    AND payment_method != ''
+    AND status = 'paid'
     ORDER BY payment_method
 ";
 $paymentMethodsStmt = $conn->prepare($paymentMethodsQuery);
@@ -119,14 +121,15 @@ if ($dateRange === 'year' && $selectedYear > 0) {
 $incomeQuery = "
     SELECT 
         COALESCE(SUM(b.amount), 0) as total_income,
-        COALESCE(SUM(CASE WHEN b.payment_method IS NOT NULL THEN b.amount ELSE 0 END), 0) as income_with_payment_method
+        COALESCE(SUM(CASE WHEN b.payment_method IS NOT NULL AND b.payment_method != '' THEN b.amount ELSE 0 END), 0) as income_with_payment_method
     FROM billings b
     WHERE b.advocate_id = ? 
     AND b.status = 'paid' 
+    AND b.payment_date IS NOT NULL
     AND YEAR(b.payment_date) = ?
 ";
 $incomeStmt = $conn->prepare($incomeQuery);
-$incomeStmt->bind_param("ii", $advocate_id, $selectedYear);
+$incomeStmt->bind_param("ii", $advocateId, $selectedYear);
 $incomeStmt->execute();
 $incomeData = $incomeStmt->get_result()->fetch_assoc();
 $totalIncome = $incomeData['total_income'];
@@ -136,13 +139,13 @@ $incomeWithPaymentMethod = $incomeData['income_with_payment_method'];
 $expensesQuery = "
     SELECT 
         COALESCE(SUM(amount), 0) as total_expenses,
-        COALESCE(SUM(CASE WHEN expense_category IS NOT NULL THEN amount ELSE 0 END), 0) as expenses_with_category
+        COALESCE(SUM(CASE WHEN expense_category IS NOT NULL AND expense_category != '' THEN amount ELSE 0 END), 0) as expenses_with_category
     FROM case_expenses 
     WHERE advocate_id = ? 
     AND YEAR(expense_date) = ?
 ";
 $expensesStmt = $conn->prepare($expensesQuery);
-$expensesStmt->bind_param("ii", $advocate_id, $selectedYear);
+$expensesStmt->bind_param("ii", $advocateId, $selectedYear);
 $expensesStmt->execute();
 $expensesData = $expensesStmt->get_result()->fetch_assoc();
 $totalExpenses = $expensesData['total_expenses'];
@@ -155,13 +158,13 @@ $invoicesQuery = "
         SUM(CASE WHEN status = 'paid' THEN 1 ELSE 0 END) as paid_invoices,
         SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending_invoices,
         SUM(CASE WHEN status = 'overdue' THEN 1 ELSE 0 END) as overdue_invoices,
-        SUM(CASE WHEN payment_method IS NOT NULL THEN 1 ELSE 0 END) as invoices_with_payment_method
+        SUM(CASE WHEN payment_method IS NOT NULL AND payment_method != '' THEN 1 ELSE 0 END) as invoices_with_payment_method
     FROM billings 
     WHERE advocate_id = ? 
     AND YEAR(billing_date) = ?
 ";
 $invoicesStmt = $conn->prepare($invoicesQuery);
-$invoicesStmt->bind_param("ii", $advocate_id, $selectedYear);
+$invoicesStmt->bind_param("ii", $advocateId, $selectedYear);
 $invoicesStmt->execute();
 $invoicesData = $invoicesStmt->get_result()->fetch_assoc();
 
@@ -188,17 +191,18 @@ $financialStats = array_merge(
 // Get payment method distribution
 $paymentMethodsQuery = "
     SELECT 
-        COALESCE(payment_method, 'Not Specified') as payment_method,
+        COALESCE(NULLIF(payment_method, ''), 'Not Specified') as payment_method,
         COUNT(*) as count,
         SUM(amount) as total_amount
     FROM billings
     WHERE advocate_id = ? 
     AND YEAR(billing_date) = ?
-    GROUP BY payment_method
-    ORDER BY count DESC
+    AND status = 'paid'
+    GROUP BY COALESCE(NULLIF(payment_method, ''), 'Not Specified')
+    ORDER BY total_amount DESC
 ";
 $paymentMethodsStmt = $conn->prepare($paymentMethodsQuery);
-$paymentMethodsStmt->bind_param("ii", $advocate_id, $selectedYear);
+$paymentMethodsStmt->bind_param("ii", $advocateId, $selectedYear);
 $paymentMethodsStmt->execute();
 $paymentMethodsResult = $paymentMethodsStmt->get_result();
 $paymentMethods = [];
