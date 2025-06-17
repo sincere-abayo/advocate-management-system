@@ -94,60 +94,73 @@ function getRecentActivities($advocateId, $conn, $limit = 5) {
 
 // Function to get financial summary
 function getFinancialSummary($advocateId, $conn) {
-    $conn = getDBConnection();
+    // Remove the duplicate connection line
+    // $conn = getDBConnection(); // Remove this line as $conn is already passed as parameter
     
-    // Get current month's data
+    // Get current month's income - Fixed query
     $stmt = $conn->prepare("
         SELECT 
             COALESCE(SUM(amount), 0) as month_income
-        FROM case_income
-        WHERE advocate_id = ? AND MONTH(income_date) = MONTH(CURRENT_DATE()) AND YEAR(income_date) = YEAR(CURRENT_DATE())
+        FROM billings
+        WHERE advocate_id = ? 
+        AND status = 'paid'
+        AND payment_date IS NOT NULL
+        AND MONTH(payment_date) = MONTH(CURRENT_DATE()) 
+        AND YEAR(payment_date) = YEAR(CURRENT_DATE())
     ");
     
     $stmt->bind_param("i", $advocateId);
     $stmt->execute();
     $result = $stmt->get_result();
     $monthIncome = $result->fetch_assoc()['month_income'];
+    $stmt->close();
     
-    // Get current month's expenses
+    // Get current month's expenses - Fixed query
     $stmt = $conn->prepare("
         SELECT 
             COALESCE(SUM(amount), 0) as month_expenses
         FROM case_expenses
-        WHERE advocate_id = ? AND MONTH(expense_date) = MONTH(CURRENT_DATE()) AND YEAR(expense_date) = YEAR(CURRENT_DATE())
+        WHERE advocate_id = ? 
+        AND MONTH(expense_date) = MONTH(CURRENT_DATE()) 
+        AND YEAR(expense_date) = YEAR(CURRENT_DATE())
     ");
     
     $stmt->bind_param("i", $advocateId);
     $stmt->execute();
     $result = $stmt->get_result();
     $monthExpenses = $result->fetch_assoc()['month_expenses'];
+    $stmt->close();
     
-    // Get year to date income
+    // Get year to date income - Fixed query
     $stmt = $conn->prepare("
         SELECT 
             COALESCE(SUM(amount), 0) as ytd_income
-        FROM case_income
-        WHERE advocate_id = ? AND YEAR(income_date) = YEAR(CURRENT_DATE())
+        FROM billings
+        WHERE advocate_id = ? 
+        AND status = 'paid'
+        AND payment_date IS NOT NULL
+        AND YEAR(payment_date) = YEAR(CURRENT_DATE())
     ");
     
     $stmt->bind_param("i", $advocateId);
     $stmt->execute();
     $result = $stmt->get_result();
     $ytdIncome = $result->fetch_assoc()['ytd_income'];
+    $stmt->close();
     
-    // Get year to date expenses
+    // Get year to date expenses - Fixed query
     $stmt = $conn->prepare("
         SELECT 
             COALESCE(SUM(amount), 0) as ytd_expenses
         FROM case_expenses
-        WHERE advocate_id = ? AND YEAR(expense_date) = YEAR(CURRENT_DATE())
+        WHERE advocate_id = ? 
+        AND YEAR(expense_date) = YEAR(CURRENT_DATE())
     ");
     
     $stmt->bind_param("i", $advocateId);
     $stmt->execute();
     $result = $stmt->get_result();
     $ytdExpenses = $result->fetch_assoc()['ytd_expenses'];
-    
     $stmt->close();
     
     return [
@@ -159,6 +172,7 @@ function getFinancialSummary($advocateId, $conn) {
         'ytd_profit' => $ytdIncome - $ytdExpenses
     ];
 }
+
 
 // Get data for dashboard
 $caseStats = getCaseStatistics($advocateId, $conn);
